@@ -27,9 +27,9 @@ import HeroObjects from './HeroObjects.astro';
       </div>
     </div>
 
-    {/* Drifts a little slower than the copy, so the two separate in depth
-        as the page scrolls away. */}
-    <div class="hero-visual" data-parallax="0.05" data-parallax-fade>
+    {/* On desktop the solids inside this box go position:fixed and travel with
+        the viewport, so this element is only holding the grid column open. */}
+    <div class="hero-visual">
       <HeroObjects />
     </div>
   </div>
@@ -60,6 +60,11 @@ import HeroObjects from './HeroObjects.astro';
   .hero-copy {
     /* staged reveal, in step with the solids assembling alongside it */
     animation: copyIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @media (min-width: 981px) {
+    /* the solids are fixed, so this reserves the column they appear over */
+    .hero-visual { min-height: min(58vh, 520px); }
   }
 
   @keyframes copyIn {

@@ -76,8 +76,18 @@ Both re-initialise on `astro:page-load` with `AbortController` teardown.
 `src/styles/global.css` holds a palette engine: each palette supplies only a
 hue + chroma seed (`--accent-h`, `--accent-c`, `--neutral-h`), and every
 surface/text lightness derives from it once per theme. Three palettes ship
-(`jade` default, `ion`, `mercury`) via `data-palette`; light/dark via
-`data-theme`, defaulting to dark and respecting `prefers-color-scheme`.
+(`mercury` light-blue default, `jade`, `ion`) via `data-palette`; light/dark
+via `data-theme`.
+
+**Every visitor opens on light + mercury regardless of their OS setting** —
+this is deliberate, so `prefers-color-scheme` is intentionally not consulted.
+Dark is opt-in through the toggle and persists in `localStorage`. Do not
+"restore" a `prefers-color-scheme` media query here.
+
+Because ClientRouter replaces the `<html>` attributes on navigation, the
+inline boot script in `Layout.astro` re-applies the stored theme and palette on
+`astro:page-load`'s sibling event `astro:after-swap`. Without that, a chosen
+theme silently reverts on the next page.
 
 Canvas code reads the resolved tokens with `getComputedStyle` and re-reads on a
 `MutationObserver` watching those two attributes — so theme switches repaint

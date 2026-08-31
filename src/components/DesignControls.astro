@@ -113,11 +113,12 @@ const palettes = [
   function activeTheme(): 'light' | 'dark' {
     const attr = root.getAttribute('data-theme');
     if (attr === 'light' || attr === 'dark') return attr;
-    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    // House default is light regardless of the OS preference.
+    return 'light';
   }
 
   function syncUi() {
-    const palette = root.getAttribute('data-palette') || 'jade';
+    const palette = root.getAttribute('data-palette') || 'mercury';
     document.querySelectorAll<HTMLButtonElement>('[data-palette-btn]').forEach((btn) => {
       btn.setAttribute('aria-pressed', String(btn.dataset.paletteBtn === palette));
     });

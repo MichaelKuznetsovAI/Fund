@@ -28,6 +28,24 @@
     max-height: 62vh;
   }
 
+  /* On desktop the solids leave the hero's flow and travel with the viewport,
+     so they accompany the reader down the page instead of fading out a few
+     hundred pixels in. They sit behind the content layer and recede as you
+     scroll, which the script drives. */
+  @media (min-width: 981px) {
+    .objects {
+      position: fixed;
+      top: 0;
+      right: max(0px, calc((100vw - 1240px) / 2));
+      width: min(46vw, 560px);
+      height: 100vh;
+      max-height: none;
+      aspect-ratio: auto;
+      z-index: 0;
+      pointer-events: none;
+    }
+  }
+
   canvas {
     position: absolute;
     inset: 0;
@@ -99,6 +117,16 @@
     let last = 0;
     let intro = 0;
 
+    // Scroll journey. 0 = hero, 1 = fully receded. The solids drift down and
+    // back into depth rather than fading out, so they stay with the reader for
+    // the whole page as a background presence.
+    let journey = 0;
+
+    function readScroll() {
+      const span = Math.max(600, window.innerHeight * 1.7);
+      journey = Math.min(1, (window.scrollY || 0) / span);
+    }
+
     const colors = { accent: '#4ade80' };
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -126,6 +154,15 @@
       digital: host.querySelector<HTMLElement>('[data-label="digital"]'),
       trading: host.querySelector<HTMLElement>('[data-label="trading"]'),
     };
+
+    // The intro animation is filled `forwards`, and a running animation beats
+    // inline styles in the cascade — so the scroll fade set on style.opacity
+    // was silently ignored and the labels stayed lit over the body copy. Drop
+    // the animation once it has played and let the inline value govern.
+    for (const el of Object.values(labels)) {
+      if (!el) continue;
+      el.addEventListener('animationend', () => { el.style.animation = 'none'; }, { once: true, signal });
+    }
 
     function readColors() {
       const cs = getComputedStyle(document.documentElement);
@@ -230,6 +267,16 @@
     }
 
     const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+    const smoothstep = (x: number) => x * x * (3 - 2 * x);
+
+    // Where an object sits once the scroll journey is taken into account:
+    // a little lower, and further back, the further down the page you are.
+    function journeyPos(o: V3, zPush: number): V3 {
+      const j = smoothstep(journey);
+      return { x: o.x, y: o.y + j * 2.1, z: o.z + zPush + j * 6.2 };
+    }
+    // Never reaches zero — receding to a quiet presence beats vanishing.
+    const journeyFade = () => 1 - 0.62 * smoothstep(journey);
 
     // ---------- draw list ----------
 
@@ -247,7 +294,7 @@
       //     screen on purpose — gold's whole proposition is that it sits. ---
       {
         const o = ORIGIN.gold;
-        const pos: V3 = { x: o.x, y: o.y, z: o.z + zPush };
+        const pos: V3 = journeyPos(o, zPush);
         const drift = t * 0.07; // barely perceptible
         const tilt = -0.32;
 
@@ -277,7 +324,7 @@
       //     oldest drops off the tail — the ledger extending. ---
       {
         const o = ORIGIN.digital;
-        const pos: V3 = { x: o.x, y: o.y, z: o.z + zPush };
+        const pos: V3 = journeyPos(o, zPush);
         const phase = (t * 0.3) % 1;
 
         const place = (s: number): V3 => {
@@ -344,7 +391,7 @@
       //     running them at different rates, trails behind each. ---
       {
         const o = ORIGIN.trading;
-        const pos: V3 = { x: o.x, y: o.y, z: o.z + zPush };
+        const pos: V3 = journeyPos(o, zPush);
         const tilt = -0.3;
         const yaw = t * 0.08;
 
@@ -439,12 +486,13 @@
       ];
       for (const s of specs) {
         const zPush = (1 - e) * 7;
-        const z = s.o.z + zPush;
-        const centre = project({ x: s.o.x, y: GROUND_Y, z });
+        const moved = journeyPos(s.o, zPush);
+        const z = moved.z;
+        const centre = project({ x: moved.x, y: GROUND_Y + (moved.y - s.o.y), z });
         const rx = (s.r * focal) / z;
         const ry = rx * 0.22;
         const drop = GROUND_Y - s.o.y;
-        const strength = Math.max(0, 1 - drop / 6) * 0.5 * e;
+        const strength = Math.max(0, 1 - drop / 6) * 0.5 * e * journeyFade();
 
         const grad = ctx!.createRadialGradient(centre.x, centre.y, 0, centre.x, centre.y, rx);
         grad.addColorStop(0, colors.accent);
@@ -466,6 +514,8 @@
     // solids at every viewport instead of drifting off them.
     function placeLabels(e: number) {
       const zPush = (1 - e) * 7;
+      // Past the hero the labels would just sit on top of body copy.
+      const labelFade = Math.max(0, 1 - journey * 3.2);
       const spec: [HTMLElement | null, V3, number, number][] = [
         [labels.gold, ORIGIN.gold, -1, -1.55],
         [labels.digital, ORIGIN.digital, 1, -1.75],
@@ -473,7 +523,9 @@
       ];
       for (const [el, o, side, dy] of spec) {
         if (!el) continue;
-        const p = project({ x: o.x, y: o.y + dy, z: o.z + zPush });
+        const moved = journeyPos(o, zPush);
+        const p = project({ x: moved.x, y: moved.y + dy, z: moved.z });
+        el.style.opacity = labelFade.toFixed(3);
         const pad = 12;
         const x = side < 0 ? p.x - el.offsetWidth - pad : p.x + pad;
         el.style.transform = `translate(${Math.round(x)}px, ${Math.round(p.y)}px)`;
@@ -496,10 +548,11 @@
 
       const items = build();
       items.sort((a, b) => b.depth - a.depth);
+      const jf = journeyFade();
 
       for (const item of items) {
         if (item.kind === 'seg') {
-          ctx!.globalAlpha = item.alpha;
+          ctx!.globalAlpha = item.alpha * jf;
           ctx!.strokeStyle = colors.accent;
           ctx!.lineWidth = 1.5;
           ctx!.beginPath();
@@ -531,20 +584,20 @@
           // These are already percentages (roughly 3–98). Scaling them by 100
           // before the clamp pinned both stops at the ceiling, which painted
           // every face as one flat opaque silhouette.
-          const lit = Math.min(94, item.alpha * (14 + 80 * item.shade));
-          const dark = Math.min(94, item.alpha * (4 + 34 * item.shade));
+          const lit = Math.min(94, item.alpha * jf * (14 + 80 * item.shade));
+          const dark = Math.min(94, item.alpha * jf * (4 + 34 * item.shade));
           const g = ctx!.createLinearGradient(lo.x, lo.y, hi.x, hi.y);
           g.addColorStop(0, `color-mix(in oklab, ${colors.accent} ${lit.toFixed(1)}%, transparent)`);
           g.addColorStop(1, `color-mix(in oklab, ${colors.accent} ${dark.toFixed(1)}%, transparent)`);
           ctx!.globalAlpha = 1;
           ctx!.fillStyle = g;
         } else {
-          ctx!.globalAlpha = item.alpha * (0.06 + 0.7 * item.shade);
+          ctx!.globalAlpha = item.alpha * jf * (0.06 + 0.7 * item.shade);
           ctx!.fillStyle = colors.accent;
         }
         ctx!.fill();
 
-        ctx!.globalAlpha = item.edge * (0.34 + 0.6 * item.shade);
+        ctx!.globalAlpha = item.edge * jf * (0.34 + 0.6 * item.shade);
         ctx!.strokeStyle = colors.accent;
         ctx!.lineWidth = 1;
         ctx!.stroke();
@@ -579,6 +632,16 @@
 
     readColors();
     resize();
+    readScroll();
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        readScroll();
+        if (reduceMotion) draw();
+      },
+      { passive: true, signal },
+    );
 
     if (reduceMotion) {
       intro = 1;

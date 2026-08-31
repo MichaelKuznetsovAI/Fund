@@ -4,7 +4,16 @@
    surface/text lightness is derived once, per theme, below.
    ============================================================ */
 
+/* Mercury (light blue) is the house default and is deliberately NOT tied to
+   the visitor's OS setting — every device opens on light + mercury. The theme
+   toggle and palette picker still override it, and the choice persists. */
 :root,
+:root[data-palette='mercury'] {
+  --accent-h: 215;
+  --accent-c: 0.12;
+  --neutral-h: 225;
+}
+
 :root[data-palette='jade'] {
   --accent-h: 165;
   --accent-c: 0.13;
@@ -17,44 +26,8 @@
   --neutral-h: 278;
 }
 
-:root[data-palette='mercury'] {
-  --accent-h: 215;
-  --accent-c: 0.12;
-  --neutral-h: 225;
-}
-
-/* ---------- Dark (default) ---------- */
-:root {
-  --bg: oklch(0.145 0.014 var(--neutral-h));
-  --bg-elev: oklch(0.185 0.016 var(--neutral-h));
-  --text: oklch(0.96 0.006 var(--neutral-h));
-  --muted: oklch(0.66 0.014 var(--neutral-h));
-  --border: oklch(0.29 0.016 var(--neutral-h));
-  --accent: oklch(0.8 var(--accent-c) var(--accent-h));
-  --accent-deep: oklch(0.62 var(--accent-c) var(--accent-h));
-  --surface-line: oklch(0.6 0.028 var(--neutral-h));
-  color-scheme: dark;
-
-  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Public Sans', -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
-}
-
-/* ---------- Light ---------- */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    --bg: oklch(0.975 0.004 var(--neutral-h));
-    --bg-elev: oklch(0.94 0.006 var(--neutral-h));
-    --text: oklch(0.19 0.014 var(--neutral-h));
-    --muted: oklch(0.45 0.012 var(--neutral-h));
-    --border: oklch(0.86 0.008 var(--neutral-h));
-    --accent: oklch(0.52 var(--accent-c) var(--accent-h));
-    --accent-deep: oklch(0.42 var(--accent-c) var(--accent-h));
-    --surface-line: oklch(0.58 0.022 var(--neutral-h));
-    color-scheme: light;
-  }
-}
-
+/* ---------- Light (default for everyone) ---------- */
+:root,
 :root[data-theme='light'] {
   --bg: oklch(0.975 0.004 var(--neutral-h));
   --bg-elev: oklch(0.94 0.006 var(--neutral-h));
@@ -65,6 +38,23 @@
   --accent-deep: oklch(0.42 var(--accent-c) var(--accent-h));
   --surface-line: oklch(0.58 0.022 var(--neutral-h));
   color-scheme: light;
+
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Public Sans', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+/* ---------- Dark (opt-in only) ---------- */
+:root[data-theme='dark'] {
+  --bg: oklch(0.145 0.014 var(--neutral-h));
+  --bg-elev: oklch(0.185 0.016 var(--neutral-h));
+  --text: oklch(0.96 0.006 var(--neutral-h));
+  --muted: oklch(0.66 0.014 var(--neutral-h));
+  --border: oklch(0.29 0.016 var(--neutral-h));
+  --accent: oklch(0.8 var(--accent-c) var(--accent-h));
+  --accent-deep: oklch(0.62 var(--accent-c) var(--accent-h));
+  --surface-line: oklch(0.6 0.028 var(--neutral-h));
+  color-scheme: dark;
 }
 
 /* ============================================================
