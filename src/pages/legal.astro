@@ -4,8 +4,8 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Important Information — Iron Hold Capital">
   <section class="page-header container">
-    <p class="eyebrow">Important Information</p>
-    <h1>Risk disclosure</h1>
+    <p class="eyebrow" data-reveal>Important Information</p>
+    <h1 data-reveal style="--stagger: 1">Risk disclosure</h1>
   </section>
 
   <section class="prose container">
@@ -34,7 +34,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style>
-  .page-header { padding: 64px 0 40px; }
+  .page-header { padding-block: 64px 40px; }
   h1 {
     font-family: var(--font-serif);
     font-weight: 400;
@@ -44,7 +44,7 @@ import Layout from '../layouts/Layout.astro';
   }
   .prose {
     max-width: 680px;
-    padding-bottom: 96px;
+    padding-block-end: 96px;
   }
   .prose p {
     font-size: 16px;

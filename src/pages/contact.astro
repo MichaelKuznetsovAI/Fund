@@ -4,8 +4,8 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Private Consultation — Iron Hold Capital">
   <section class="page-header container">
-    <p class="eyebrow">Private Consultation</p>
-    <h1>Let's talk.</h1>
+    <p class="eyebrow" data-reveal>Private Consultation</p>
+    <h1 data-reveal style="--stagger: 1">Let's talk.</h1>
     <p class="subhead">
       Iron Hold Capital works with a limited number of private investors. Tell us
       a little about yourself and we'll be in touch.
@@ -13,7 +13,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <section class="form-section container">
-    <form class="contact-form">
+    <form class="contact-form" data-reveal style="--stagger: 2">
       <label>
         <span>Name</span>
         <input type="text" name="name" autocomplete="name" required />
@@ -41,7 +41,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style>
-  .page-header { padding: 64px 0 24px; }
+  .page-header { padding-block: 64px 24px; }
   h1 {
     font-family: var(--font-serif);
     font-weight: 400;
@@ -55,7 +55,7 @@ import Layout from '../layouts/Layout.astro';
     color: var(--muted);
     max-width: 480px;
   }
-  .form-section { padding-bottom: 96px; }
+  .form-section { padding-block-end: 96px; }
   .contact-form {
     display: flex;
     flex-direction: column;

@@ -25,13 +25,13 @@ const pillars = [
 
 <Layout title="The Three Pillars — Iron Hold Capital">
   <section class="page-header container">
-    <p class="eyebrow">The Three Pillars</p>
-    <h1>Gold. Digital assets. Global trading.</h1>
+    <p class="eyebrow" data-reveal>The Three Pillars</p>
+    <h1 data-reveal style="--stagger: 1">Gold. Digital assets. Global trading.</h1>
   </section>
 
   <section class="pillars-detail container">
     {pillars.map((pillar) => (
-      <article class="pillar-block">
+      <article class="pillar-block" data-reveal>
         <h2>{pillar.name}</h2>
         <p class="thesis">{pillar.thesis}</p>
         <div class="pillar-grid">
@@ -50,7 +50,7 @@ const pillars = [
 </Layout>
 
 <style>
-  .page-header { padding: 64px 0 40px; }
+  .page-header { padding-block: 64px 40px; }
   h1 {
     font-family: var(--font-serif);
     font-weight: 400;
@@ -62,7 +62,7 @@ const pillars = [
     display: flex;
     flex-direction: column;
     gap: 56px;
-    padding-bottom: 96px;
+    padding-block-end: 96px;
   }
   .pillar-block {
     border-top: 1px solid var(--border);

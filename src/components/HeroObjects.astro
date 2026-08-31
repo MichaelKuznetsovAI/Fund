@@ -102,6 +102,25 @@
     const colors = { accent: '#4ade80' };
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // Screen-space light axis, used to orient the per-face gradient.
+    const LIGHT_LEN = Math.hypot(LIGHT.x, LIGHT.y) || 1;
+    const LIGHT_SX = LIGHT.x / LIGHT_LEN;
+    const LIGHT_SY = LIGHT.y / LIGHT_LEN;
+
+    // color-mix() in canvas needs a reasonably current engine. Probe once and
+    // fall back to flat alpha rather than silently painting nothing.
+    const canMix = (() => {
+      try {
+        const probe = document.createElement('canvas').getContext('2d');
+        if (!probe) return false;
+        probe.fillStyle = '#000';
+        probe.fillStyle = 'color-mix(in oklab, #ff0000 50%, transparent)';
+        return probe.fillStyle !== '#000';
+      } catch {
+        return false;
+      }
+    })();
+
     const labels = {
       gold: host.querySelector<HTMLElement>('[data-label="gold"]'),
       digital: host.querySelector<HTMLElement>('[data-label="digital"]'),
@@ -485,16 +504,39 @@
           continue;
         }
 
+        const pts = item.pts;
         ctx!.beginPath();
-        ctx!.moveTo(item.pts[0].x, item.pts[0].y);
-        for (let i = 1; i < item.pts.length; i++) ctx!.lineTo(item.pts[i].x, item.pts[i].y);
+        ctx!.moveTo(pts[0].x, pts[0].y);
+        for (let i = 1; i < pts.length; i++) ctx!.lineTo(pts[i].x, pts[i].y);
         ctx!.closePath();
 
-        ctx!.globalAlpha = item.alpha * (0.06 + 0.7 * item.shade);
-        ctx!.fillStyle = colors.accent;
+        // Flat-filled faces read as paper cutouts. Running a gradient across
+        // each face along the light axis gives the surface a metallic falloff
+        // for the cost of one gradient per face.
+        if (canMix) {
+          let lo = pts[0];
+          let hi = pts[0];
+          let loD = Infinity;
+          let hiD = -Infinity;
+          for (const p of pts) {
+            const d = p.x * LIGHT_SX + p.y * LIGHT_SY;
+            if (d < loD) { loD = d; lo = p; }
+            if (d > hiD) { hiD = d; hi = p; }
+          }
+          const lit = Math.min(96, item.alpha * (12 + 86 * item.shade) * 100) / 100;
+          const dark = Math.min(96, item.alpha * (3 + 40 * item.shade) * 100) / 100;
+          const g = ctx!.createLinearGradient(lo.x, lo.y, hi.x, hi.y);
+          g.addColorStop(0, `color-mix(in oklab, ${colors.accent} ${(lit * 100).toFixed(1)}%, transparent)`);
+          g.addColorStop(1, `color-mix(in oklab, ${colors.accent} ${(dark * 100).toFixed(1)}%, transparent)`);
+          ctx!.globalAlpha = 1;
+          ctx!.fillStyle = g;
+        } else {
+          ctx!.globalAlpha = item.alpha * (0.06 + 0.7 * item.shade);
+          ctx!.fillStyle = colors.accent;
+        }
         ctx!.fill();
 
-        ctx!.globalAlpha = item.edge * (0.3 + 0.55 * item.shade);
+        ctx!.globalAlpha = item.edge * (0.34 + 0.6 * item.shade);
         ctx!.strokeStyle = colors.accent;
         ctx!.lineWidth = 1;
         ctx!.stroke();
@@ -505,7 +547,9 @@
     }
 
     function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Cap at 3: phones ship DPR 3 and capping at 2 visibly softens every
+      // hairline in the scene. Above 3 the pixel cost stops buying anything.
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
       w = canvas!.clientWidth;
       h = canvas!.clientHeight;
       // Tie focal length to the canvas so the solids scale with the frame and

@@ -87,8 +87,23 @@ const palettes = [
   .mode:hover { border-color: var(--accent); color: var(--accent); }
 
   @media (max-width: 600px) {
-    .controls { right: 12px; bottom: 12px; padding: 6px 10px; gap: 8px; }
+    /* It sat on top of body copy on a phone. Shrink it, drop it into the
+       corner and let it recede until touched — it is a review tool, not part
+       of the site. */
+    .controls {
+      right: 8px;
+      bottom: 8px;
+      padding: 5px 7px;
+      gap: 6px;
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+    }
+    .controls:hover,
+    .controls:focus-within { opacity: 1; }
     .tag { display: none; }
+    .swatch { width: 18px; height: 18px; }
+    .swatch i { width: 9px; height: 9px; }
+    .mode { font-size: 9px; padding: 4px 7px; }
   }
 </style>
 
@@ -110,30 +125,45 @@ const palettes = [
     if (label) label.textContent = activeTheme() === 'dark' ? 'Dark' : 'Light';
   }
 
-  document.querySelectorAll<HTMLButtonElement>('[data-palette-btn]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const next = btn.dataset.paletteBtn;
-      if (!next) return;
-      root.setAttribute('data-palette', next);
-      try {
-        localStorage.setItem('ihc-palette', next);
-      } catch {
-        /* storage blocked — selection just won't persist */
-      }
-      syncUi();
+  // ClientRouter rebuilds this component on every navigation, so listeners
+  // bound once at first load end up attached to discarded nodes — the control
+  // then looks fine and silently does nothing. Re-bind per page, guarding
+  // each node so a persisted element never gets double-bound.
+  function bindControls() {
+    document.querySelectorAll<HTMLButtonElement>('[data-palette-btn]').forEach((btn) => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        const next = btn.dataset.paletteBtn;
+        if (!next) return;
+        root.setAttribute('data-palette', next);
+        try {
+          localStorage.setItem('ihc-palette', next);
+        } catch {
+          /* storage blocked — selection just won't persist */
+        }
+        syncUi();
+      });
     });
-  });
 
-  document.querySelector<HTMLButtonElement>('[data-theme-toggle]')?.addEventListener('click', () => {
-    const next = activeTheme() === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    try {
-      localStorage.setItem('ihc-theme', next);
-    } catch {
-      /* storage blocked — theme just won't persist */
+    const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+    if (toggle && toggle.dataset.bound !== '1') {
+      toggle.dataset.bound = '1';
+      toggle.addEventListener('click', () => {
+        const next = activeTheme() === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try {
+          localStorage.setItem('ihc-theme', next);
+        } catch {
+          /* storage blocked — theme just won't persist */
+        }
+        syncUi();
+      });
     }
-    syncUi();
-  });
 
-  syncUi();
+    syncUi();
+  }
+
+  bindControls();
+  document.addEventListener('astro:page-load', bindControls);
 </script>

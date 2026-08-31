@@ -140,11 +140,12 @@ import HeroObjects from './HeroObjects.astro';
     .hero { min-height: 0; align-items: flex-start; padding: 12px 0 64px; }
     .hero-visual { order: 2; }
     .scroll-cue { display: none; }
-    /* Keeps the three labels on one line at 360px and up. */
+    /* 9px was small enough to be genuinely hard to read. 11px still fits on
+       one line at 360px once the tracking is tightened. */
     .ticker {
-      font-size: 9px;
-      letter-spacing: 0.13em;
-      gap: 9px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      gap: 8px;
       margin-bottom: 18px;
     }
     .ticker i { width: 3px; height: 3px; }

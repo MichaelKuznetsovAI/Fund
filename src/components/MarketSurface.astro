@@ -81,10 +81,20 @@
 </style>
 
 <script>
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-market-surface]');
-  const ctx = canvas?.getContext('2d');
+  let surfaceRaf = 0;
+  let surfaceTeardown: AbortController | null = null;
 
-  if (canvas && ctx) {
+  function initMarketSurface() {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-market-surface]');
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) return;
+    if (canvas.dataset.live === '1') return; // persisted node, already running
+
+    canvas.dataset.live = '1';
+    cancelAnimationFrame(surfaceRaf);
+    surfaceTeardown?.abort();
+    surfaceTeardown = new AbortController();
+    const { signal } = surfaceTeardown;
     // --- scene constants (world units) ---
     const FOCAL = 300;
     const SURFACE_Y = 9; // camera sits this far above the plane
@@ -99,7 +109,6 @@
     let h = 0;
     let horizon = 0;
     let t = 0;
-    let raf = 0;
     let lastDraw = 0;
 
     const colors = { line: '#7b8794', accent: '#4ade80' };
@@ -146,7 +155,9 @@
     }
 
     function resize() {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Cap at 3: phones ship DPR 3 and capping at 2 visibly softens every
+      // hairline in the scene. Above 3 the pixel cost stops buying anything.
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
       w = canvas!.clientWidth;
       h = canvas!.clientHeight;
       horizon = h * HORIZON_RATIO;
@@ -249,7 +260,7 @@
     }
 
     function step(now: number) {
-      raf = requestAnimationFrame(step);
+      surfaceRaf = requestAnimationFrame(step);
       // cap at ~36fps: the motion is slow, and this halves the power draw
       if (now - lastDraw < 27) return;
       lastDraw = now;
@@ -266,12 +277,12 @@
     }
 
     function start() {
-      if (raf) return;
-      raf = requestAnimationFrame(step);
+      if (surfaceRaf) return;
+      surfaceRaf = requestAnimationFrame(step);
     }
     function stop() {
-      cancelAnimationFrame(raf);
-      raf = 0;
+      cancelAnimationFrame(surfaceRaf);
+      surfaceRaf = 0;
     }
 
     readColors();
@@ -285,26 +296,39 @@
     }
 
     let resizeTimer = 0;
-    window.addEventListener('resize', () => {
-      window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(() => {
-        resize();
-        draw();
-      }, 120);
-    });
+    window.addEventListener(
+      'resize',
+      () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+          resize();
+          draw();
+        }, 120);
+      },
+      { signal },
+    );
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) stop();
-      else if (!reduceMotion) start();
-    });
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (document.hidden) stop();
+        else if (!reduceMotion) start();
+      },
+      { signal },
+    );
 
     // Re-read tokens whenever the theme or palette changes.
-    new MutationObserver(() => {
+    const mo = new MutationObserver(() => {
       readColors();
       draw();
-    }).observe(document.documentElement, {
+    });
+    mo.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ['data-theme', 'data-palette'],
     });
+    signal.addEventListener('abort', () => mo.disconnect());
   }
+
+  initMarketSurface();
+  document.addEventListener('astro:page-load', initMarketSurface);
 </script>
