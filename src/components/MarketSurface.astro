@@ -111,6 +111,13 @@
     let t = 0;
     let lastDraw = 0;
 
+    // Scroll-linked camera. The surface is position:fixed, so without this it
+    // is completely static while the page moves — which is why scrolling felt
+    // dead. Scrolling now flows the terrain past the viewer and lifts the
+    // horizon, so the whole site reads as travelling over the landscape.
+    let waveShift = 0;
+    let horizonLift = 0;
+
     const colors = { line: '#7b8794', accent: '#4ade80' };
     const cols: number[] = [];
     const rows: number[] = [];
@@ -167,14 +174,22 @@
     }
 
     const px = (x: number, z: number) => w / 2 + (x * FOCAL) / z;
-    const py = (y: number, z: number) => horizon + (y * FOCAL) / z;
+    const py = (y: number, z: number) => horizon - horizonLift + (y * FOCAL) / z;
 
     function wave(x: number, z: number, time: number) {
+      const zz = z + waveShift;
       return (
-        1.7 * Math.sin(x * 0.085 + time * 0.45) * Math.cos(z * 0.075 - time * 0.3) +
-        0.95 * Math.sin(x * 0.045 + z * 0.09 + time * 0.2) +
+        1.7 * Math.sin(x * 0.085 + time * 0.45) * Math.cos(zz * 0.075 - time * 0.3) +
+        0.95 * Math.sin(x * 0.045 + zz * 0.09 + time * 0.2) +
         0.45 * Math.sin(x * 0.2 - time * 0.62)
       );
+    }
+
+    function readScroll() {
+      const y = window.scrollY || 0;
+      waveShift = y * 0.035;
+      // eases out, so deep pages do not drift the horizon off-screen
+      horizonLift = (h * 0.1 * y) / (y + 900);
     }
 
     function draw() {
@@ -288,6 +303,16 @@
     readColors();
     buildGeometry();
     resize();
+    readScroll();
+
+    window.addEventListener(
+      'scroll',
+      () => {
+        readScroll();
+        if (reduceMotion) draw(); // no rAF loop running to pick it up
+      },
+      { passive: true, signal },
+    );
 
     if (reduceMotion) {
       draw();

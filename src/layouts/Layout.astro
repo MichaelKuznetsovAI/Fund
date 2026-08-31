@@ -32,14 +32,25 @@ const {
     <ClientRouter />
     <script is:inline>
       (function () {
-        try {
-          var theme = localStorage.getItem('ihc-theme');
-          if (theme === 'light' || theme === 'dark') {
-            document.documentElement.setAttribute('data-theme', theme);
-          }
-          var palette = localStorage.getItem('ihc-palette');
-          if (palette) document.documentElement.setAttribute('data-palette', palette);
-        } catch (e) {}
+        function applyPrefs() {
+          try {
+            var theme = localStorage.getItem('ihc-theme');
+            if (theme === 'light' || theme === 'dark') {
+              document.documentElement.setAttribute('data-theme', theme);
+            }
+            var palette = localStorage.getItem('ihc-palette');
+            if (palette) document.documentElement.setAttribute('data-palette', palette);
+          } catch (e) {}
+        }
+
+        applyPrefs();
+
+        // ClientRouter replaces the <html> attributes with the incoming
+        // document's, and the static HTML carries no data-theme/data-palette —
+        // so navigating away from a chosen theme silently dropped it back to
+        // the dark default. after-swap runs before paint, so re-applying here
+        // restores the choice without a flash.
+        document.addEventListener('astro:after-swap', applyPrefs);
       })();
     </script>
   </head>

@@ -176,17 +176,20 @@
       return { verts, faces };
     }
 
-    // Good Delivery proportions: long, chunky, noticeably tapered. Thin bars
-    // read as stacked plates, so the height carries real weight here.
-    const INGOT = frustum(0.6, 0.34, 0.2, 0.7);
+    // A real Good Delivery bar is about 6.5 : 2 : 1 — long and shallow. The
+    // previous 3:1.7:1 was nearly a brick, and the arbitrary per-bar rotations
+    // turned the stack into a lumpy silhouette. Bars are now properly
+    // proportioned and cross-stacked at right angles, which is both how
+    // bullion is actually stored and a far cleaner outline.
+    const INGOT = frustum(0.78, 0.3, 0.13, 0.74);
     const BAR_STACK = [
-      { dy: 0.0, ry: 0.0 },
-      { dy: -0.43, ry: 0.14 },
-      { dy: -0.86, ry: -0.09 },
+      { dy: 0.0, ry: 0 },
+      { dy: -0.265, ry: Math.PI / 2 },
+      { dy: -0.53, ry: 0 },
     ];
 
-    const BLOCK = cube(0.21);
-    const CHAIN_N = 9;
+    const BLOCK = cube(0.235);
+    const CHAIN_N = 8;
 
     const CORE = octahedron(0.2);
     const ORBIT_BODY = cube(0.085);
@@ -523,11 +526,14 @@
             if (d < loD) { loD = d; lo = p; }
             if (d > hiD) { hiD = d; hi = p; }
           }
-          const lit = Math.min(96, item.alpha * (12 + 86 * item.shade) * 100) / 100;
-          const dark = Math.min(96, item.alpha * (3 + 40 * item.shade) * 100) / 100;
+          // These are already percentages (roughly 3–98). Scaling them by 100
+          // before the clamp pinned both stops at the ceiling, which painted
+          // every face as one flat opaque silhouette.
+          const lit = Math.min(94, item.alpha * (14 + 80 * item.shade));
+          const dark = Math.min(94, item.alpha * (4 + 34 * item.shade));
           const g = ctx!.createLinearGradient(lo.x, lo.y, hi.x, hi.y);
-          g.addColorStop(0, `color-mix(in oklab, ${colors.accent} ${(lit * 100).toFixed(1)}%, transparent)`);
-          g.addColorStop(1, `color-mix(in oklab, ${colors.accent} ${(dark * 100).toFixed(1)}%, transparent)`);
+          g.addColorStop(0, `color-mix(in oklab, ${colors.accent} ${lit.toFixed(1)}%, transparent)`);
+          g.addColorStop(1, `color-mix(in oklab, ${colors.accent} ${dark.toFixed(1)}%, transparent)`);
           ctx!.globalAlpha = 1;
           ctx!.fillStyle = g;
         } else {
