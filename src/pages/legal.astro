@@ -42,10 +42,8 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text);
     margin-top: 16px;
   }
-  .prose {
-    max-width: 680px;
-    padding-block-end: 96px;
-  }
+  .prose { padding-block-end: 96px; }
+  .prose > * { max-width: 680px; }
   .prose p {
     font-size: 16px;
     line-height: 1.75;

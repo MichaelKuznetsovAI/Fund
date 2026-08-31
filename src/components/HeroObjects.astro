@@ -215,10 +215,6 @@
       const c = Math.cos(a), s = Math.sin(a);
       return { x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c };
     };
-    const rotZ = (p: V3, a: number): V3 => {
-      const c = Math.cos(a), s = Math.sin(a);
-      return { x: p.x * c - p.y * s, y: p.x * s + p.y * c, z: p.z };
-    };
 
     const project = (p: V3): P2 => ({
       x: w / 2 + (p.x * focal) / p.z,
@@ -485,6 +481,12 @@
     }
 
     function draw() {
+      // The canvas takes its height from the wrapper's aspect-ratio, so before
+      // the stylesheet applies its box can measure 0. focal would then be 0 and
+      // every vertex would project onto a single point — objects vanish and the
+      // labels pile up in one spot. Wait for a real box instead of drawing junk.
+      if (w < 2 || h < 2 || focal <= 0) return;
+
       ctx!.clearRect(0, 0, w, h);
       ctx!.lineJoin = 'round';
       ctx!.lineCap = 'round';
@@ -585,15 +587,15 @@
       activeRaf = requestAnimationFrame(step);
     }
 
-    let resizeTimer = 0;
-    window.addEventListener(
-      'resize',
-      () => {
-        window.clearTimeout(resizeTimer);
-        resizeTimer = window.setTimeout(() => { resize(); draw(); }, 120);
-      },
-      { signal },
-    );
+    // Authoritative size source: fires when the box first becomes real (fonts
+    // landing, late stylesheet, layout settling) and on every later change, so
+    // the scene can never be stuck sized from a zero-height measurement.
+    const ro = new ResizeObserver(() => {
+      resize();
+      draw();
+    });
+    ro.observe(canvas);
+    signal.addEventListener('abort', () => ro.disconnect());
 
     document.addEventListener(
       'visibilitychange',

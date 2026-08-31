@@ -47,10 +47,11 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text);
     margin-top: 16px;
   }
-  .prose {
-    max-width: 680px;
-    padding-block-end: 96px;
-  }
+  /* The container keeps its full width and centring so the copy lines up
+     with the heading above it; the reading measure is applied to the
+     children instead. Narrowing the container itself moved the whole column. */
+  .prose { padding-block-end: 96px; }
+  .prose > * { max-width: 680px; }
   .prose p {
     font-size: 17px;
     line-height: 1.75;

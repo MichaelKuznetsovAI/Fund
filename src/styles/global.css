@@ -92,6 +92,11 @@ h1, h2, h3, p { margin: 0; }
   padding: 0 clamp(22px, 5vw, 72px);
 }
 
+/* Note for future edits: never narrow `max-width` on an element that also
+   carries .container. That element is centred by `margin: 0 auto`, so the
+   narrower box re-centres and its copy drifts out of line with the heading
+   above it. Put the reading measure on the children instead. */
+
 /* ---------- Typography primitives ---------- */
 
 .eyebrow {

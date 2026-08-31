@@ -193,6 +193,8 @@
     }
 
     function draw() {
+      if (w < 2 || h < 2) return; // box not measured yet
+
       ctx!.clearRect(0, 0, w, h);
       ctx!.lineJoin = 'round';
       ctx!.lineCap = 'round';
@@ -320,18 +322,16 @@
       start();
     }
 
-    let resizeTimer = 0;
-    window.addEventListener(
-      'resize',
-      () => {
-        window.clearTimeout(resizeTimer);
-        resizeTimer = window.setTimeout(() => {
-          resize();
-          draw();
-        }, 120);
-      },
-      { signal },
-    );
+    // A canvas with no stylesheet applied yet falls back to 300x150, and a
+    // window 'resize' listener alone would never correct that. Observing the
+    // element means the first real box always lands.
+    const ro = new ResizeObserver(() => {
+      resize();
+      readScroll();
+      draw();
+    });
+    ro.observe(canvas);
+    signal.addEventListener('abort', () => ro.disconnect());
 
     document.addEventListener(
       'visibilitychange',
