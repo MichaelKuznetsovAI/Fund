@@ -1,0 +1,139 @@
+---
+// TEMPORARY review affordance: lets the palette and theme be compared in
+// context. Delete this component (and its mount in Layout.astro) once a
+// palette is chosen — the choice then lives in global.css as the default.
+const palettes = [
+  { id: 'jade', label: 'Jade' },
+  { id: 'ion', label: 'Ion' },
+  { id: 'mercury', label: 'Mercury' },
+];
+---
+
+<aside class="controls" aria-label="Design preview controls">
+  <span class="tag">Preview</span>
+  <div class="swatches">
+    {palettes.map((p) => (
+      <button type="button" class="swatch" data-palette-btn={p.id} title={p.label} aria-label={`${p.label} palette`}>
+        <i data-swatch={p.id}></i>
+      </button>
+    ))}
+  </div>
+  <button type="button" class="mode" data-theme-toggle aria-label="Toggle light and dark">
+    <span data-mode-label>Dark</span>
+  </button>
+</aside>
+
+<style>
+  .controls {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: color-mix(in oklab, var(--bg-elev) 88%, transparent);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(10px);
+  }
+
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.7;
+  }
+
+  .swatches { display: flex; gap: 6px; }
+
+  .swatch {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: border-color 0.15s ease;
+  }
+  .swatch:hover { border-color: var(--accent); }
+  .swatch[aria-pressed='true'] { border-color: var(--accent); }
+
+  .swatch i {
+    display: block;
+    width: 12px;
+    height: 12px;
+  }
+  [data-swatch='jade'] { background: oklch(0.8 0.13 165); }
+  [data-swatch='ion'] { background: oklch(0.8 0.15 277); }
+  [data-swatch='mercury'] { background: oklch(0.8 0.12 215); }
+
+  .mode {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  .mode:hover { border-color: var(--accent); color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .controls { right: 12px; bottom: 12px; padding: 6px 10px; gap: 8px; }
+    .tag { display: none; }
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+
+  function activeTheme(): 'light' | 'dark' {
+    const attr = root.getAttribute('data-theme');
+    if (attr === 'light' || attr === 'dark') return attr;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  function syncUi() {
+    const palette = root.getAttribute('data-palette') || 'jade';
+    document.querySelectorAll<HTMLButtonElement>('[data-palette-btn]').forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(btn.dataset.paletteBtn === palette));
+    });
+    const label = document.querySelector<HTMLElement>('[data-mode-label]');
+    if (label) label.textContent = activeTheme() === 'dark' ? 'Dark' : 'Light';
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('[data-palette-btn]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = btn.dataset.paletteBtn;
+      if (!next) return;
+      root.setAttribute('data-palette', next);
+      try {
+        localStorage.setItem('ihc-palette', next);
+      } catch {
+        /* storage blocked — selection just won't persist */
+      }
+      syncUi();
+    });
+  });
+
+  document.querySelector<HTMLButtonElement>('[data-theme-toggle]')?.addEventListener('click', () => {
+    const next = activeTheme() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('ihc-theme', next);
+    } catch {
+      /* storage blocked — theme just won't persist */
+    }
+    syncUi();
+  });
+
+  syncUi();
+</script>

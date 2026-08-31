@@ -1,0 +1,154 @@
+---
+import Logo from './Logo.astro';
+import { path, isCurrent } from '../lib/path';
+
+const navLinks = [
+  { href: '/strategy', label: 'Strategy' },
+  { href: '/approach', label: 'Portfolio' },
+  { href: '/contact', label: 'Contact' },
+];
+const here = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container header-row">
+    <a href={path('/')} class="brand" aria-label="Iron Hold Capital — home">
+      <Logo />
+    </a>
+
+    <nav class="nav-desktop" aria-label="Primary">
+      {navLinks.map((link) => (
+        <a
+          href={path(link.href)}
+          class="nav-link"
+          aria-current={isCurrent(here, link.href) ? 'page' : undefined}
+        >
+          {link.label}
+        </a>
+      ))}
+      <a href={path('/contact')} class="btn-ghost nav-cta">Investor Login</a>
+    </nav>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      data-menu-toggle
+      aria-label="Open menu"
+      aria-expanded="false"
+    >
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <div class="mobile-menu" data-mobile-menu hidden>
+    {navLinks.map((link) => (
+      <a href={path(link.href)} class="mobile-link">{link.label}</a>
+    ))}
+    <a href={path('/contact')} class="btn mobile-cta">Investor Login</a>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 3;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 88px;
+  }
+  .brand { text-decoration: none; }
+
+  .nav-desktop {
+    display: flex;
+    align-items: center;
+    gap: 34px;
+  }
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.18s ease;
+  }
+  .nav-link:hover,
+  .nav-link[aria-current='page'] { color: var(--accent); }
+
+  .nav-cta {
+    min-height: 40px;
+    padding: 0 18px;
+    font-size: 11px;
+  }
+
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .menu-toggle span {
+    display: block;
+    height: 1px;
+    width: 22px;
+    background: var(--text);
+    margin-left: auto;
+  }
+  .menu-toggle span:last-child { width: 14px; }
+
+  .mobile-menu {
+    display: flex;
+    flex-direction: column;
+    padding: 8px clamp(22px, 5vw, 72px) 28px;
+  }
+  .mobile-menu[hidden] { display: none; }
+
+  .mobile-link {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text);
+    text-decoration: none;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-cta { margin-top: 22px; }
+
+  @media (max-width: 860px) {
+    .nav-desktop { display: none; }
+    .menu-toggle { display: flex; }
+    .header-row { height: 74px; }
+  }
+</style>
+
+<script>
+  // Re-bound after every ClientRouter navigation, since the header is
+  // re-rendered rather than persisted.
+  function initMenu() {
+    const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+    const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
+    if (!toggle || !menu || toggle.dataset.bound === '1') return;
+    toggle.dataset.bound = '1';
+
+    toggle.addEventListener('click', () => {
+      const willOpen = menu.hidden;
+      menu.hidden = !willOpen;
+      toggle.setAttribute('aria-expanded', String(willOpen));
+      toggle.setAttribute('aria-label', willOpen ? 'Close menu' : 'Open menu');
+    });
+  }
+
+  initMenu();
+  document.addEventListener('astro:page-load', initMenu);
+</script>

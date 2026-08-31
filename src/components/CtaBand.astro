@@ -1,0 +1,38 @@
+---
+import { path } from '../lib/path';
+---
+
+<section class="cta-band">
+  <div class="container cta-inner">
+    <div data-reveal>
+      <p class="eyebrow">Private Consultation</p>
+      <h2 class="display">Start a conversation.</h2>
+    </div>
+    <a href={path('/contact')} class="btn" data-reveal style="--stagger: 1">Request Access</a>
+  </div>
+</section>
+
+<style>
+  .cta-band {
+    position: relative;
+    padding: clamp(48px, 8vh, 96px) 0 clamp(56px, 9vh, 108px);
+  }
+  .cta-inner {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    flex-wrap: wrap;
+    padding-top: clamp(32px, 5vh, 56px);
+    border-top: 1px solid var(--border);
+  }
+  h2 {
+    font-size: clamp(30px, 4.4vw, 54px);
+    margin-top: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .cta-inner { align-items: stretch; }
+    .cta-inner .btn { width: 100%; }
+  }
+</style>

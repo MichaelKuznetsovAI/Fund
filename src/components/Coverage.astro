@@ -1,0 +1,195 @@
+---
+// PLACEHOLDER CONTENT — confirm before launch.
+//
+// Michael to replace with the fund's real traded universe. Two deliberate
+// choices worth keeping when you edit:
+//
+//  1. This is framed as the markets we TRADE, not a holdings disclosure.
+//     Publishing live positions invites both a competitive and a regulatory
+//     problem; a coverage universe does not.
+//  2. Tickers are set in the mono face rather than dropped in as third-party
+//     brand logos. Those logos are full-colour (Solana's gradient, Polkadot's
+//     magenta) and would fight the palette on every row — and reproducing
+//     them also drags in trademark questions this site does not need.
+//     Set as type, the row reads like a terminal watchlist and stays on-brand.
+
+const majors = [
+  { ticker: 'BTC', name: 'Bitcoin' },
+  { ticker: 'ETH', name: 'Ethereum' },
+  { ticker: 'SOL', name: 'Solana' },
+  { ticker: 'XAU', name: 'Gold' },
+];
+
+const wider = ['BNB', 'XRP', 'ADA', 'AVAX', 'LINK', 'DOT', 'ARB', 'OP'];
+
+const infrastructure = [
+  { label: 'Custody', value: '[Custodian — to confirm]' },
+  { label: 'Execution', value: '[Venues — to confirm]' },
+  { label: 'Settlement', value: '[Banking partner — to confirm]' },
+  { label: 'Reporting', value: '[Administrator — to confirm]' },
+];
+---
+
+<section class="coverage">
+  <div class="container">
+    <p class="section-label" data-reveal>Coverage</p>
+
+    <div class="lead" data-reveal>
+      <h2 class="display">The markets we trade.</h2>
+      <p>
+        A deliberately narrow universe. Depth in a handful of liquid markets
+        beats breadth across assets we cannot exit at size.
+      </p>
+    </div>
+
+    <div class="majors">
+      {majors.map((asset, i) => (
+        <div class="major" data-reveal style={`--stagger: ${i + 1}`}>
+          <span class="ticker">{asset.ticker}</span>
+          <span class="name">{asset.name}</span>
+        </div>
+      ))}
+    </div>
+
+    <div class="wider" data-reveal>
+      <span class="wider-label">Also traded</span>
+      <ul>
+        {wider.map((ticker) => <li>{ticker}</li>)}
+      </ul>
+    </div>
+
+    <dl class="infra" data-reveal>
+      {infrastructure.map((row) => (
+        <div class="infra-row">
+          <dt>{row.label}</dt>
+          <dd>{row.value}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .coverage {
+    position: relative;
+    padding: clamp(48px, 8vh, 96px) 0;
+  }
+
+  .lead {
+    max-width: 620px;
+    margin-bottom: clamp(36px, 5vh, 56px);
+  }
+  .lead h2 {
+    font-size: clamp(28px, 3.6vw, 44px);
+    margin-bottom: 18px;
+  }
+  .lead p {
+    font-size: clamp(15px, 1.2vw, 17px);
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 52ch;
+  }
+
+  .majors {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-block: 1px solid var(--border);
+  }
+  .major {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: clamp(22px, 2.6vw, 32px) clamp(16px, 2vw, 28px);
+    border-left: 1px solid var(--border);
+    transition: background-color 0.22s ease;
+  }
+  .major:first-child { border-left: 0; }
+  .major:hover { background: color-mix(in oklab, var(--accent) 7%, transparent); }
+
+  .ticker {
+    font-family: var(--font-mono);
+    font-size: clamp(20px, 2.2vw, 27px);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+  }
+  .name {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .wider {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .wider-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .wider ul {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .wider li {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 11px;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .wider li:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .infra {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding-top: 32px;
+  }
+  .infra-row {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .infra dt {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .infra dd {
+    margin: 0;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 860px) {
+    .majors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .major:nth-child(3) { border-left: 0; }
+    .major:nth-child(-n + 2) { border-bottom: 1px solid var(--border); }
+    .infra { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+  }
+  @media (max-width: 520px) {
+    .majors { grid-template-columns: 1fr; }
+    .major { border-left: 0; border-bottom: 1px solid var(--border); }
+    .major:last-child { border-bottom: 0; }
+    .infra { grid-template-columns: 1fr; }
+  }
+</style>

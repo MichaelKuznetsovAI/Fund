@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Important Information — Iron Hold Capital">
+  <section class="page-header container">
+    <p class="eyebrow">Important Information</p>
+    <h1>Risk disclosure</h1>
+  </section>
+
+  <section class="prose container">
+    <p>
+      <strong>Entity &amp; jurisdiction:</strong> <em>[pending legal structuring]</em>
+    </p>
+    <p>
+      <strong>Regulatory status:</strong>
+      <em>[pending — not licensed or registered in any jurisdiction at this time]</em>
+    </p>
+    <p>
+      This website is provided for informational purposes only and does not
+      constitute an offer to sell, or a solicitation of an offer to buy, any
+      security or investment product, in any jurisdiction.
+    </p>
+    <p>
+      Investing involves risk, including the possible loss of principal. Past
+      performance, where shown, is not indicative of future results. Digital
+      assets are highly volatile and may be subject to significant, rapid price
+      swings; precious metals and actively traded strategies carry their own
+      distinct risks. No content on this site should be construed as investment,
+      legal, or tax advice.
+    </p>
+    <p><em>[Additional jurisdiction-specific disclosures — pending legal review.]</em></p>
+  </section>
+</Layout>
+
+<style>
+  .page-header { padding: 64px 0 40px; }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 46px);
+    color: var(--text);
+    margin-top: 16px;
+  }
+  .prose {
+    max-width: 680px;
+    padding-bottom: 96px;
+  }
+  .prose p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .prose strong { color: var(--text); }
+</style>

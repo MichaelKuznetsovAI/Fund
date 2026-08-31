@@ -1,0 +1,67 @@
+---
+import { path } from '../lib/path';
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Strategy & Philosophy — Iron Hold Capital">
+  <section class="page-header container">
+    <p class="eyebrow">Our Philosophy</p>
+    <h1>Protect first. Grow always.</h1>
+  </section>
+
+  <section class="prose container">
+    <p>
+      Iron Hold Capital was built on a simple premise: most capital is lost not to
+      bad markets, but to bad discipline. We combine three asset classes that
+      rarely move together &mdash; digital assets, gold, and actively traded
+      global markets &mdash; into a single, risk-managed approach.
+    </p>
+    <p>
+      Each pillar plays a distinct role. Gold anchors the portfolio against
+      uncertainty. Digital assets capture asymmetric, longer-horizon opportunity.
+      Global trading strategies stay active where markets are inefficient enough
+      to reward it. None of the three is a bet on a single outcome &mdash;
+      together, they are built to hold their ground across cycles.
+    </p>
+
+    <h2>How we think about risk</h2>
+    <p>
+      Position sizing comes before conviction. No single asset, trade, or theme
+      is ever allowed to threaten the whole. Downside discipline governs every
+      decision before upside potential is considered &mdash; concentration is a
+      risk to be managed, not a strategy to be pursued.
+    </p>
+
+    <a href={path('/approach')} class="link-arrow">See how this plays out across our three pillars</a>
+  </section>
+</Layout>
+
+<style>
+  .page-header {
+    padding: 64px 0 40px;
+  }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 46px);
+    color: var(--text);
+    margin-top: 16px;
+  }
+  .prose {
+    max-width: 680px;
+    padding-bottom: 96px;
+  }
+  .prose p {
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 26px;
+    color: var(--text);
+    margin: 40px 0 16px;
+  }
+</style>

@@ -1,0 +1,571 @@
+---
+// Three objects, one per pillar. The form is derived from what the asset
+// actually IS, and the motion from how it actually behaves:
+//
+//   GOLD     a stack of cast trapezoidal ingots — the Good Delivery bar, not
+//            a gem. It barely moves, because that is the whole point of gold.
+//   DIGITAL  a chain of linked blocks that appends at the head and drops at
+//            the tail. A ledger extending, one block at a time.
+//   TRADING  an orbital system: bodies on inclined orbits at different rates,
+//            trailing behind them. Capital in continuous rotation.
+//
+// Hand-written perspective projector with a painter's-algorithm sort, so the
+// solids genuinely occlude one another and cast onto a shared ground plane.
+---
+
+<div class="objects" data-hero-objects>
+  <canvas data-objects-canvas></canvas>
+  <span class="obj-label" data-label="gold">Gold</span>
+  <span class="obj-label" data-label="digital">Digital Assets</span>
+  <span class="obj-label" data-label="trading">Global Trading</span>
+</div>
+
+<style>
+  .objects {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    max-height: 62vh;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .obj-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    animation: labelIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    will-change: transform;
+  }
+  [data-label='gold'] { animation-delay: 1s; }
+  [data-label='digital'] { animation-delay: 1.15s; }
+  [data-label='trading'] { animation-delay: 1.3s; }
+
+  @keyframes labelIn {
+    to { opacity: 1; }
+  }
+
+  @media (max-width: 980px) {
+    .objects {
+      aspect-ratio: 5 / 4;
+      max-height: 340px;
+    }
+    .obj-label { font-size: 9px; letter-spacing: 0.14em; }
+  }
+</style>
+
+<script>
+  let activeRaf = 0;
+  let teardown: AbortController | null = null;
+
+  function initHeroObjects() {
+    const host = document.querySelector<HTMLElement>('[data-hero-objects]');
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-objects-canvas]');
+    const ctx = canvas?.getContext('2d');
+    if (!host || !canvas || !ctx) return;
+
+    // ClientRouter swaps the document; drop the previous loop and listeners
+    // before binding to the new nodes.
+    cancelAnimationFrame(activeRaf);
+    teardown?.abort();
+    teardown = new AbortController();
+    const { signal } = teardown;
+
+    type V3 = { x: number; y: number; z: number };
+    type P2 = { x: number; y: number };
+
+    const LIGHT: V3 = { x: -0.42, y: -0.78, z: -0.46 };
+    const GROUND_Y = 3.1; // world height of the implied floor
+
+    let w = 0;
+    let h = 0;
+    let focal = 560;
+    let t = 0;
+    let last = 0;
+    let intro = 0;
+
+    const colors = { accent: '#4ade80' };
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const labels = {
+      gold: host.querySelector<HTMLElement>('[data-label="gold"]'),
+      digital: host.querySelector<HTMLElement>('[data-label="digital"]'),
+      trading: host.querySelector<HTMLElement>('[data-label="trading"]'),
+    };
+
+    function readColors() {
+      const cs = getComputedStyle(document.documentElement);
+      colors.accent = cs.getPropertyValue('--accent').trim() || colors.accent;
+    }
+
+    // ---------- geometry ----------
+
+    function cube(r: number) {
+      const verts: V3[] = [];
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+        verts.push({ x: sx * r, y: sy * r, z: sz * r });
+      }
+      const faces = [
+        [0, 1, 3, 2], [4, 6, 7, 5],
+        [0, 4, 5, 1], [2, 3, 7, 6],
+        [0, 2, 6, 4], [1, 5, 7, 3],
+      ];
+      return { verts, faces };
+    }
+
+    function octahedron(r: number) {
+      const verts: V3[] = [
+        { x: r, y: 0, z: 0 }, { x: -r, y: 0, z: 0 },
+        { x: 0, y: r, z: 0 }, { x: 0, y: -r, z: 0 },
+        { x: 0, y: 0, z: r }, { x: 0, y: 0, z: -r },
+      ];
+      const faces = [
+        [0, 2, 4], [2, 1, 4], [1, 3, 4], [3, 0, 4],
+        [2, 0, 5], [1, 2, 5], [3, 1, 5], [0, 3, 5],
+      ];
+      return { verts, faces };
+    }
+
+    // A cast bar: rectangular, tapered toward the top face. +y is down, so the
+    // wide face is the one it rests on.
+    function frustum(w: number, d: number, hh: number, taper: number) {
+      const tw = w * taper;
+      const td = d * taper;
+      const verts: V3[] = [
+        { x: -w, y: hh, z: -d }, { x: w, y: hh, z: -d }, { x: w, y: hh, z: d }, { x: -w, y: hh, z: d },
+        { x: -tw, y: -hh, z: -td }, { x: tw, y: -hh, z: -td }, { x: tw, y: -hh, z: td }, { x: -tw, y: -hh, z: td },
+      ];
+      const faces = [
+        [0, 1, 2, 3], [4, 7, 6, 5],
+        [0, 4, 5, 1], [1, 5, 6, 2], [2, 6, 7, 3], [3, 7, 4, 0],
+      ];
+      return { verts, faces };
+    }
+
+    // Good Delivery proportions: long, chunky, noticeably tapered. Thin bars
+    // read as stacked plates, so the height carries real weight here.
+    const INGOT = frustum(0.6, 0.34, 0.2, 0.7);
+    const BAR_STACK = [
+      { dy: 0.0, ry: 0.0 },
+      { dy: -0.43, ry: 0.14 },
+      { dy: -0.86, ry: -0.09 },
+    ];
+
+    const BLOCK = cube(0.21);
+    const CHAIN_N = 9;
+
+    const CORE = octahedron(0.2);
+    const ORBIT_BODY = cube(0.085);
+    const ORBITS = [
+      { r: 1.3, inc: 0.18, rot: 0.0, rate: 0.5, phase: 0 },
+      { r: 1.0, inc: 1.15, rot: 0.7, rate: -0.78, phase: 2.2 },
+      { r: 1.58, inc: -0.55, rot: -0.5, rate: 0.34, phase: 4.1 },
+    ];
+
+    const ORIGIN = {
+      gold: { x: -2.5, y: -1.15, z: 11 },
+      digital: { x: 2.4, y: -1.5, z: 11.4 },
+      trading: { x: 0.05, y: 1.6, z: 10.2 },
+    };
+
+    // ---------- math ----------
+
+    const rotX = (p: V3, a: number): V3 => {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x: p.x, y: p.y * c - p.z * s, z: p.y * s + p.z * c };
+    };
+    const rotY = (p: V3, a: number): V3 => {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x: p.x * c + p.z * s, y: p.y, z: -p.x * s + p.z * c };
+    };
+    const rotZ = (p: V3, a: number): V3 => {
+      const c = Math.cos(a), s = Math.sin(a);
+      return { x: p.x * c - p.y * s, y: p.x * s + p.y * c, z: p.z };
+    };
+
+    const project = (p: V3): P2 => ({
+      x: w / 2 + (p.x * focal) / p.z,
+      y: h / 2 + (p.y * focal) / p.z,
+    });
+
+    function normal(a: V3, b: V3, c: V3): V3 {
+      const u = { x: b.x - a.x, y: b.y - a.y, z: b.z - a.z };
+      const v = { x: c.x - a.x, y: c.y - a.y, z: c.z - a.z };
+      const n = { x: u.y * v.z - u.z * v.y, y: u.z * v.x - u.x * v.z, z: u.x * v.y - u.y * v.x };
+      const len = Math.hypot(n.x, n.y, n.z) || 1;
+      return { x: n.x / len, y: n.y / len, z: n.z / len };
+    }
+
+    const easeOut = (x: number) => 1 - Math.pow(1 - x, 3);
+
+    // ---------- draw list ----------
+
+    type Poly = { kind: 'poly'; pts: P2[]; depth: number; shade: number; alpha: number; edge: number };
+    type Seg = { kind: 'seg'; a: P2; b: P2; depth: number; alpha: number };
+    type Item = Poly | Seg;
+
+    function build(): Item[] {
+      const items: Item[] = [];
+      const e = easeOut(intro);
+      const zPush = (1 - e) * 7;
+      const scale = 0.25 + 0.75 * e;
+
+      // --- GOLD: a stack of cast bars. It is the least animated object on
+      //     screen on purpose — gold's whole proposition is that it sits. ---
+      {
+        const o = ORIGIN.gold;
+        const pos: V3 = { x: o.x, y: o.y, z: o.z + zPush };
+        const drift = t * 0.07; // barely perceptible
+        const tilt = -0.32;
+
+        for (const bar of BAR_STACK) {
+          const world = INGOT.verts.map((p) => {
+            let q = rotY(p, bar.ry);
+            q = { x: q.x, y: q.y + bar.dy, z: q.z };
+            q = rotX(rotY(q, drift), tilt);
+            return { x: q.x * scale + pos.x, y: q.y * scale + pos.y, z: q.z * scale + pos.z };
+          });
+          for (const f of INGOT.faces) {
+            const vs = f.map((i) => world[i]);
+            const n = normal(vs[0], vs[1], vs[2]);
+            items.push({
+              kind: 'poly',
+              pts: vs.map(project),
+              depth: vs.reduce((s, v) => s + v.z, 0) / vs.length,
+              shade: Math.abs(n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z),
+              alpha: 0.98 * e, // densest, most opaque object in the scene
+              edge: 0.9 * e,
+            });
+          }
+        }
+      }
+
+      // --- DIGITAL: a chain of blocks. One appends at the head while the
+      //     oldest drops off the tail — the ledger extending. ---
+      {
+        const o = ORIGIN.digital;
+        const pos: V3 = { x: o.x, y: o.y, z: o.z + zPush };
+        const phase = (t * 0.3) % 1;
+
+        const place = (s: number): V3 => {
+          const c = s - (CHAIN_N - 1) / 2;
+          let p: V3 = {
+            x: c * 0.47,
+            y: Math.cos(c * 0.24) * 0.2 - 0.1,
+            z: Math.sin(c * 0.3) * 0.95,
+          };
+          p = rotX(rotY(p, -0.38 + t * 0.05), -0.22);
+          return { x: p.x * scale + pos.x, y: p.y * scale + pos.y, z: p.z * scale + pos.z };
+        };
+
+        const centres: V3[] = [];
+        const fades: number[] = [];
+
+        for (let i = 0; i < CHAIN_N; i++) {
+          const s = i - phase;
+          const edge = Math.min(s, CHAIN_N - 1 - s);
+          const fade = Math.max(0, Math.min(1, edge));
+          const centre = place(s);
+          centres.push(centre);
+          fades.push(fade);
+
+          const grow = 0.5 + 0.5 * fade;
+          for (const f of BLOCK.faces) {
+            const vs = f.map((idx) => {
+              const p = BLOCK.verts[idx];
+              let q = rotY(p, -0.38 + t * 0.05);
+              q = rotX(q, -0.22);
+              return {
+                x: q.x * scale * grow + centre.x,
+                y: q.y * scale * grow + centre.y,
+                z: q.z * scale * grow + centre.z,
+              };
+            });
+            const n = normal(vs[0], vs[1], vs[2]);
+            items.push({
+              kind: 'poly',
+              pts: vs.map(project),
+              depth: vs.reduce((s2, v) => s2 + v.z, 0) / vs.length,
+              shade: Math.abs(n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z),
+              alpha: 0.85 * fade * e,
+              edge: 0.8 * fade * e,
+            });
+          }
+        }
+
+        // the links that make it a chain rather than a row
+        for (let i = 0; i < CHAIN_N - 1; i++) {
+          const a = centres[i];
+          const b = centres[i + 1];
+          items.push({
+            kind: 'seg',
+            a: project(a),
+            b: project(b),
+            depth: (a.z + b.z) / 2,
+            alpha: 0.5 * Math.min(fades[i], fades[i + 1]) * e,
+          });
+        }
+      }
+
+      // --- TRADING: an orbital system. Faint orbit paths for context, bodies
+      //     running them at different rates, trails behind each. ---
+      {
+        const o = ORIGIN.trading;
+        const pos: V3 = { x: o.x, y: o.y, z: o.z + zPush };
+        const tilt = -0.3;
+        const yaw = t * 0.08;
+
+        const toWorld = (p: V3): V3 => {
+          const q = rotY(rotX(p, tilt), yaw);
+          return { x: q.x * scale + pos.x, y: q.y * scale + pos.y, z: q.z * scale + pos.z };
+        };
+
+        const onOrbit = (orb: typeof ORBITS[number], a: number): V3 =>
+          toWorld(rotY(rotX({ x: Math.cos(a) * orb.r, y: Math.sin(a) * orb.r, z: 0 }, orb.inc), orb.rot));
+
+        // core
+        {
+          const world = CORE.verts.map((p) => toWorld(rotY(p, t * 0.5)));
+          for (const f of CORE.faces) {
+            const vs = f.map((i) => world[i]);
+            const n = normal(vs[0], vs[1], vs[2]);
+            items.push({
+              kind: 'poly',
+              pts: vs.map(project),
+              depth: vs.reduce((s, v) => s + v.z, 0) / vs.length,
+              shade: Math.abs(n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z),
+              alpha: 0.95 * e,
+              edge: 0.9 * e,
+            });
+          }
+        }
+
+        const SEG = 52;
+        for (const orb of ORBITS) {
+          // orbit path
+          for (let i = 0; i < SEG; i++) {
+            const a = onOrbit(orb, (i / SEG) * Math.PI * 2);
+            const b = onOrbit(orb, ((i + 1) / SEG) * Math.PI * 2);
+            const depth = (a.z + b.z) / 2;
+            const near = 1 - Math.max(0, Math.min(1, (depth - (pos.z - 1.5)) / 3));
+            items.push({
+              kind: 'seg',
+              a: project(a),
+              b: project(b),
+              depth,
+              alpha: (0.07 + 0.2 * near) * e,
+            });
+          }
+
+          const angle = orb.phase + t * orb.rate;
+
+          // trail
+          for (let k = 0; k < 11; k++) {
+            const a = onOrbit(orb, angle - k * 0.055 * Math.sign(orb.rate));
+            const b = onOrbit(orb, angle - (k + 1) * 0.055 * Math.sign(orb.rate));
+            items.push({
+              kind: 'seg',
+              a: project(a),
+              b: project(b),
+              depth: (a.z + b.z) / 2,
+              alpha: 0.7 * (1 - k / 11) * e,
+            });
+          }
+
+          // body
+          const centre = onOrbit(orb, angle);
+          for (const f of ORBIT_BODY.faces) {
+            const vs = f.map((idx) => {
+              const p = ORBIT_BODY.verts[idx];
+              const q = rotY(rotX(p, tilt), yaw + t * 0.6);
+              return { x: q.x * scale + centre.x, y: q.y * scale + centre.y, z: q.z * scale + centre.z };
+            });
+            const n = normal(vs[0], vs[1], vs[2]);
+            items.push({
+              kind: 'poly',
+              pts: vs.map(project),
+              depth: vs.reduce((s, v) => s + v.z, 0) / vs.length,
+              shade: Math.abs(n.x * LIGHT.x + n.y * LIGHT.y + n.z * LIGHT.z),
+              alpha: 0.95 * e,
+              edge: 0.95 * e,
+            });
+          }
+        }
+      }
+
+      return items;
+    }
+
+    // Soft contact shadow on the implied floor, so the solids belong to the
+    // same space as the market surface behind them rather than floating.
+    function drawShadows(e: number) {
+      const specs = [
+        { o: ORIGIN.gold, r: 1.15 },
+        { o: ORIGIN.digital, r: 1.3 },
+        { o: ORIGIN.trading, r: 1.3 },
+      ];
+      for (const s of specs) {
+        const zPush = (1 - e) * 7;
+        const z = s.o.z + zPush;
+        const centre = project({ x: s.o.x, y: GROUND_Y, z });
+        const rx = (s.r * focal) / z;
+        const ry = rx * 0.22;
+        const drop = GROUND_Y - s.o.y;
+        const strength = Math.max(0, 1 - drop / 6) * 0.5 * e;
+
+        const grad = ctx!.createRadialGradient(centre.x, centre.y, 0, centre.x, centre.y, rx);
+        grad.addColorStop(0, colors.accent);
+        grad.addColorStop(1, 'transparent');
+
+        ctx!.save();
+        ctx!.translate(centre.x, centre.y);
+        ctx!.scale(1, ry / rx);
+        ctx!.globalAlpha = strength;
+        ctx!.fillStyle = grad;
+        ctx!.beginPath();
+        ctx!.arc(0, 0, rx, 0, Math.PI * 2);
+        ctx!.fill();
+        ctx!.restore();
+      }
+    }
+
+    // Labels are positioned from the real projected centres, so they track the
+    // solids at every viewport instead of drifting off them.
+    function placeLabels(e: number) {
+      const zPush = (1 - e) * 7;
+      const spec: [HTMLElement | null, V3, number, number][] = [
+        [labels.gold, ORIGIN.gold, -1, -1.55],
+        [labels.digital, ORIGIN.digital, 1, -1.75],
+        [labels.trading, ORIGIN.trading, 1, 1.6],
+      ];
+      for (const [el, o, side, dy] of spec) {
+        if (!el) continue;
+        const p = project({ x: o.x, y: o.y + dy, z: o.z + zPush });
+        const pad = 12;
+        const x = side < 0 ? p.x - el.offsetWidth - pad : p.x + pad;
+        el.style.transform = `translate(${Math.round(x)}px, ${Math.round(p.y)}px)`;
+      }
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, w, h);
+      ctx!.lineJoin = 'round';
+      ctx!.lineCap = 'round';
+
+      const e = easeOut(intro);
+      drawShadows(e);
+
+      const items = build();
+      items.sort((a, b) => b.depth - a.depth);
+
+      for (const item of items) {
+        if (item.kind === 'seg') {
+          ctx!.globalAlpha = item.alpha;
+          ctx!.strokeStyle = colors.accent;
+          ctx!.lineWidth = 1.5;
+          ctx!.beginPath();
+          ctx!.moveTo(item.a.x, item.a.y);
+          ctx!.lineTo(item.b.x, item.b.y);
+          ctx!.stroke();
+          continue;
+        }
+
+        ctx!.beginPath();
+        ctx!.moveTo(item.pts[0].x, item.pts[0].y);
+        for (let i = 1; i < item.pts.length; i++) ctx!.lineTo(item.pts[i].x, item.pts[i].y);
+        ctx!.closePath();
+
+        ctx!.globalAlpha = item.alpha * (0.06 + 0.7 * item.shade);
+        ctx!.fillStyle = colors.accent;
+        ctx!.fill();
+
+        ctx!.globalAlpha = item.edge * (0.3 + 0.55 * item.shade);
+        ctx!.strokeStyle = colors.accent;
+        ctx!.lineWidth = 1;
+        ctx!.stroke();
+      }
+
+      ctx!.globalAlpha = 1;
+      placeLabels(e);
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas!.clientWidth;
+      h = canvas!.clientHeight;
+      // Tie focal length to the canvas so the solids scale with the frame and
+      // never crop, whatever the viewport.
+      focal = Math.min(w, h) * 1.32;
+      canvas!.width = Math.round(w * dpr);
+      canvas!.height = Math.round(h * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function step(now: number) {
+      activeRaf = requestAnimationFrame(step);
+      if (now - last < 27) return; // ~36fps
+      last = now;
+      t += 0.016;
+      if (intro < 1) intro = Math.min(1, intro + 0.012);
+      draw();
+    }
+
+    readColors();
+    resize();
+
+    if (reduceMotion) {
+      intro = 1;
+      draw();
+    } else {
+      activeRaf = requestAnimationFrame(step);
+    }
+
+    let resizeTimer = 0;
+    window.addEventListener(
+      'resize',
+      () => {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => { resize(); draw(); }, 120);
+      },
+      { signal },
+    );
+
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (document.hidden) {
+          cancelAnimationFrame(activeRaf);
+          activeRaf = 0;
+        } else if (!reduceMotion && !activeRaf) {
+          activeRaf = requestAnimationFrame(step);
+        }
+      },
+      { signal },
+    );
+
+    const mo = new MutationObserver(() => { readColors(); draw(); });
+    mo.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-palette'],
+    });
+    signal.addEventListener('abort', () => mo.disconnect());
+  }
+
+  initHeroObjects();
+  document.addEventListener('astro:page-load', initHeroObjects);
+</script>

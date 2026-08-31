@@ -1,0 +1,310 @@
+---
+// A live 3D volatility surface: a wireframe grid in true perspective,
+// undulating over time, with a market tick sweeping from the horizon
+// toward the viewer. Fixed to the viewport, so the whole site floats
+// above one continuous landscape rather than decorating a single hero.
+---
+
+<div class="stage" aria-hidden="true">
+  <div class="horizon-glow"></div>
+  <canvas data-market-surface></canvas>
+  <div class="scrim"></div>
+</div>
+
+<style>
+  .stage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--bg);
+    transition: background-color 0.25s ease;
+  }
+
+  .horizon-glow {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    width: min(140vw, 1800px);
+    height: min(70vh, 620px);
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in oklab, var(--accent) 22%, transparent) 0%,
+      transparent 68%
+    );
+    opacity: 0.5;
+    animation: breathe 14s ease-in-out infinite;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* Fade the mesh into the horizon at the top and out at the very
+       bottom, so it reads as landscape rather than a pasted-on grid. */
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 34%,
+      #000 46%,
+      #000 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 34%,
+      #000 46%,
+      #000 88%,
+      transparent 100%
+    );
+  }
+
+  /* Keeps body copy legible where content scrolls over the surface. */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--bg) 0%, transparent) 0%,
+      color-mix(in oklab, var(--bg) 45%, transparent) 55%,
+      color-mix(in oklab, var(--bg) 72%, transparent) 100%
+    );
+  }
+
+  @keyframes breathe {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.62; transform: translate(-50%, -52%) scale(1.06); }
+  }
+</style>
+
+<script>
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-market-surface]');
+  const ctx = canvas?.getContext('2d');
+
+  if (canvas && ctx) {
+    // --- scene constants (world units) ---
+    const FOCAL = 300;
+    const SURFACE_Y = 9; // camera sits this far above the plane
+    const Z_NEAR = 7;
+    const Z_FAR = 92;
+    const X_HALF = 104;
+    const COL_STEP = 4;
+    const ROW_COUNT = 30;
+    const HORIZON_RATIO = 0.42;
+
+    let w = 0;
+    let h = 0;
+    let horizon = 0;
+    let t = 0;
+    let raf = 0;
+    let lastDraw = 0;
+
+    const colors = { line: '#7b8794', accent: '#4ade80' };
+    const cols: number[] = [];
+    const rows: number[] = [];
+    type Particle = { x: number; y: number; z: number; s: number; dx: number };
+    let particles: Particle[] = [];
+
+    function spawnParticle(initial: boolean): Particle {
+      return {
+        x: (Math.random() * 2 - 1) * 82,
+        // Random height on respawn too, so particles never enter the scene
+        // in a single sheet and travel in lockstep.
+        y: SURFACE_Y - 1 - Math.random() * (initial ? 22 : 20),
+        z: Z_NEAR + Math.random() * (Z_FAR - Z_NEAR),
+        s: 0.35 + Math.random() * 0.9,
+        dx: (Math.random() * 2 - 1) * 0.02,
+      };
+    }
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function readColors() {
+      const cs = getComputedStyle(document.documentElement);
+      colors.line = cs.getPropertyValue('--surface-line').trim() || colors.line;
+      colors.accent = cs.getPropertyValue('--accent').trim() || colors.accent;
+    }
+
+    function buildGeometry() {
+      cols.length = 0;
+      for (let x = -X_HALF; x <= X_HALF; x += COL_STEP) cols.push(x);
+
+      rows.length = 0;
+      for (let i = 0; i < ROW_COUNT; i++) {
+        // geometric spacing keeps the rows evenly distributed on screen
+        rows.push(Z_NEAR * Math.pow(Z_FAR / Z_NEAR, i / (ROW_COUNT - 1)));
+      }
+
+      // Each particle carries its own lateral drift. Without it they hold
+      // a constant world-x, and any two that share an x project onto the
+      // same ray from the vanishing point — which reads as a dotted line
+      // rather than atmosphere.
+      particles = Array.from({ length: 18 }, () => spawnParticle(true));
+    }
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas!.clientWidth;
+      h = canvas!.clientHeight;
+      horizon = h * HORIZON_RATIO;
+      canvas!.width = Math.round(w * dpr);
+      canvas!.height = Math.round(h * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const px = (x: number, z: number) => w / 2 + (x * FOCAL) / z;
+    const py = (y: number, z: number) => horizon + (y * FOCAL) / z;
+
+    function wave(x: number, z: number, time: number) {
+      return (
+        1.7 * Math.sin(x * 0.085 + time * 0.45) * Math.cos(z * 0.075 - time * 0.3) +
+        0.95 * Math.sin(x * 0.045 + z * 0.09 + time * 0.2) +
+        0.45 * Math.sin(x * 0.2 - time * 0.62)
+      );
+    }
+
+    function draw() {
+      ctx!.clearRect(0, 0, w, h);
+      ctx!.lineJoin = 'round';
+      ctx!.lineCap = 'round';
+
+      // A tick sweeping from the horizon toward the viewer, on a long cycle.
+      const cycle = 13;
+      const phase = (t % cycle) / cycle;
+      const sweepZ = Z_FAR - phase * (Z_FAR - Z_NEAR);
+
+      // --- rows: lines of constant depth ---
+      for (let ri = 0; ri < rows.length; ri++) {
+        const z = rows[ri];
+        const depth = 1 - (z - Z_NEAR) / (Z_FAR - Z_NEAR);
+        const near = Math.pow(Math.max(depth, 0), 1.15);
+        const lit = Math.max(0, 1 - Math.abs(z - sweepZ) / 5.5);
+
+        ctx!.beginPath();
+        for (let ci = 0; ci < cols.length; ci++) {
+          const x = cols[ci];
+          const y = SURFACE_Y + wave(x, z, t);
+          const sx = px(x, z);
+          const sy = py(y, z);
+          if (ci === 0) ctx!.moveTo(sx, sy);
+          else ctx!.lineTo(sx, sy);
+        }
+
+        ctx!.globalAlpha = Math.min(0.8, near * 0.48 + lit * 0.5);
+        ctx!.strokeStyle = lit > 0.08 ? colors.accent : colors.line;
+        ctx!.lineWidth = lit > 0.08 ? 1.35 : 1;
+        ctx!.stroke();
+      }
+
+      // --- columns: lines running into the distance, drawn in depth bands
+      //     so they fade out toward the vanishing point ---
+      const BANDS = 4;
+      const perBand = Math.ceil((rows.length - 1) / BANDS);
+      for (let ci = 0; ci < cols.length; ci += 2) {
+        const x = cols[ci];
+        for (let b = 0; b < BANDS; b++) {
+          const start = b * perBand;
+          const end = Math.min(start + perBand, rows.length - 1);
+          if (start >= end) continue;
+
+          ctx!.beginPath();
+          for (let ri = start; ri <= end; ri++) {
+            const z = rows[ri];
+            const y = SURFACE_Y + wave(x, z, t);
+            const sx = px(x, z);
+            const sy = py(y, z);
+            if (ri === start) ctx!.moveTo(sx, sy);
+            else ctx!.lineTo(sx, sy);
+          }
+          ctx!.globalAlpha = 0.3 * Math.pow(1 - b / BANDS, 1.4);
+          ctx!.strokeStyle = colors.line;
+          ctx!.lineWidth = 1;
+          ctx!.stroke();
+        }
+      }
+
+      // --- motes drifting above the surface. Deliberately large and soft:
+      //     hard 1px dots at this density read as dust on the screen, a
+      //     defocused bokeh reads as air between the viewer and the data.
+      for (const p of particles) {
+        const depth = 1 - (p.z - Z_NEAR) / (Z_FAR - Z_NEAR);
+        if (depth <= 0) continue;
+        const r = Math.max(3, (FOCAL / p.z) * 0.9);
+        const cx = px(p.x, p.z);
+        const cy = py(p.y, p.z);
+        const grad = ctx!.createRadialGradient(cx, cy, 0, cx, cy, r);
+        grad.addColorStop(0, colors.accent);
+        grad.addColorStop(1, 'transparent');
+        ctx!.globalAlpha = Math.pow(Math.max(depth, 0), 1.8) * 0.16;
+        ctx!.fillStyle = grad;
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx!.fill();
+      }
+
+      ctx!.globalAlpha = 1;
+    }
+
+    function step(now: number) {
+      raf = requestAnimationFrame(step);
+      // cap at ~36fps: the motion is slow, and this halves the power draw
+      if (now - lastDraw < 27) return;
+      lastDraw = now;
+
+      t += 0.016;
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.y -= 0.014 * p.s;
+        p.z -= 0.01 * p.s;
+        p.x += p.dx;
+        if (p.y < SURFACE_Y - 24 || p.z < Z_NEAR) particles[i] = spawnParticle(false);
+      }
+      draw();
+    }
+
+    function start() {
+      if (raf) return;
+      raf = requestAnimationFrame(step);
+    }
+    function stop() {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    readColors();
+    buildGeometry();
+    resize();
+
+    if (reduceMotion) {
+      draw();
+    } else {
+      start();
+    }
+
+    let resizeTimer = 0;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        resize();
+        draw();
+      }, 120);
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else if (!reduceMotion) start();
+    });
+
+    // Re-read tokens whenever the theme or palette changes.
+    new MutationObserver(() => {
+      readColors();
+      draw();
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'data-palette'],
+    });
+  }
+</script>

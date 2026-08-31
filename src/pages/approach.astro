@@ -1,0 +1,107 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const pillars = [
+  {
+    name: 'Digital Assets',
+    thesis: 'Crypto is an emerging, volatile, and asymmetric asset class. We treat it as one — not as a bet on any single token or narrative.',
+    lookFor: 'Position sizing appropriate to volatility, institutional-grade custody standards, and deep, liquid markets.',
+    avoid: 'Concentration in a single asset, illiquid tokens, and leverage used as a substitute for conviction.',
+  },
+  {
+    name: 'Gold & Precious Metals',
+    thesis: "Gold is the portfolio's ballast — held for what it has always been: a hedge against currency debasement and macro uncertainty.",
+    lookFor: '[Physical bullion vs. instrument exposure — depends on final fund structure.]',
+    avoid: 'Treating gold as a trading vehicle rather than a long-horizon anchor.',
+  },
+  {
+    name: 'Global Trading',
+    thesis: 'A systematic and discretionary approach to global markets, active only where inefficiency is real enough to reward it.',
+    lookFor: 'Defined risk controls on every position, and a repeatable process over any single prediction.',
+    avoid: 'Strategy reveals, forecasting theatre, and returns built on undisclosed leverage.',
+  },
+];
+---
+
+<Layout title="The Three Pillars — Iron Hold Capital">
+  <section class="page-header container">
+    <p class="eyebrow">The Three Pillars</p>
+    <h1>Gold. Digital assets. Global trading.</h1>
+  </section>
+
+  <section class="pillars-detail container">
+    {pillars.map((pillar) => (
+      <article class="pillar-block">
+        <h2>{pillar.name}</h2>
+        <p class="thesis">{pillar.thesis}</p>
+        <div class="pillar-grid">
+          <div>
+            <h3>What we look for</h3>
+            <p>{pillar.lookFor}</p>
+          </div>
+          <div>
+            <h3>What we avoid</h3>
+            <p>{pillar.avoid}</p>
+          </div>
+        </div>
+      </article>
+    ))}
+  </section>
+</Layout>
+
+<style>
+  .page-header { padding: 64px 0 40px; }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 46px);
+    color: var(--text);
+    margin-top: 16px;
+  }
+  .pillars-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    padding-bottom: 96px;
+  }
+  .pillar-block {
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+  h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .thesis {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--text);
+    max-width: 680px;
+    margin-bottom: 28px;
+  }
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    max-width: 780px;
+  }
+  h3 {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .pillar-grid p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  @media (max-width: 700px) {
+    .pillar-grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+</style>

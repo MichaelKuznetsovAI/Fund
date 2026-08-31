@@ -1,0 +1,70 @@
+---
+import { path } from '../lib/path';
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <span class="mark">Iron Hold Capital</span>
+      <nav class="footer-nav" aria-label="Footer">
+        <a href={path('/strategy')}>Strategy</a>
+        <a href={path('/approach')}>Portfolio</a>
+        <a href={path('/contact')}>Contact</a>
+        <a href={path('/legal')}>Important Information</a>
+      </nav>
+    </div>
+    <p class="disclaimer">
+      For informational purposes only. This site does not constitute an offer or
+      solicitation. <em>[Jurisdiction / registration statement pending legal review.]</em>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    position: relative;
+    padding: 40px 0 48px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    flex-wrap: wrap;
+    margin-bottom: 26px;
+  }
+
+  .mark {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .footer-nav {
+    display: flex;
+    gap: 26px;
+    flex-wrap: wrap;
+  }
+  .footer-nav a {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.18s ease;
+  }
+  .footer-nav a:hover { color: var(--accent); }
+
+  .disclaimer {
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--muted);
+    opacity: 0.8;
+    max-width: 70ch;
+  }
+</style>

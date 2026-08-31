@@ -1,0 +1,174 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import MarketSurface from '../components/MarketSurface.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import DesignControls from '../components/DesignControls.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const {
+  title,
+  description = 'Iron Hold Capital — a single risk-managed book across gold, digital assets, and global trading strategies.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;1,8..60,400;0,8..60,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <ClientRouter />
+    <script is:inline>
+      (function () {
+        try {
+          var theme = localStorage.getItem('ihc-theme');
+          if (theme === 'light' || theme === 'dark') {
+            document.documentElement.setAttribute('data-theme', theme);
+          }
+          var palette = localStorage.getItem('ihc-palette');
+          if (palette) document.documentElement.setAttribute('data-palette', palette);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    {/* Persisted across navigation, so the surface keeps animating unbroken
+        while the page content crossfades over it. */}
+    <MarketSurface transition:persist />
+    <div class="page">
+      <Header />
+      <main transition:animate="fade">
+        <slot />
+      </main>
+      <Footer />
+    </div>
+    <DesignControls transition:persist />
+  </body>
+</html>
+
+<style>
+  .page {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  main { flex: 1; }
+</style>
+
+<style is:global>
+  /* Cross-page transition: a short, soft crossfade. The background surface
+     persists underneath, so navigation reads as the content changing rather
+     than the whole site reloading. */
+  @view-transition { navigation: auto; }
+
+  ::view-transition-old(root) {
+    animation: ihcFadeOut 0.22s cubic-bezier(0.4, 0, 1, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: ihcFadeIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes ihcFadeOut {
+    to { opacity: 0; }
+  }
+  @keyframes ihcFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) { animation: none; }
+  }
+</style>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- calm scroll reveal -------------------------------------------------
+  let observer: IntersectionObserver | null = null;
+
+  function setupReveals() {
+    const targets = document.querySelectorAll<HTMLElement>('[data-reveal]:not([data-revealed])');
+
+    // Without an observer, or with motion suppressed, everything is simply
+    // shown — content must never be able to get stuck invisible.
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      targets.forEach((el) => el.setAttribute('data-revealed', ''));
+      return;
+    }
+
+    observer?.disconnect();
+    observer = new IntersectionObserver(
+      (entries, obs) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.setAttribute('data-revealed', '');
+          obs.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -10% 0px', threshold: 0.08 },
+    );
+
+    targets.forEach((el) => observer!.observe(el));
+  }
+
+  // --- gentle parallax ----------------------------------------------------
+  // Elements drift at a fraction of scroll speed and ease out as they leave,
+  // so the hero recedes rather than snapping away.
+  let parallaxItems: { el: HTMLElement; rate: number; fade: boolean }[] = [];
+  let ticking = false;
+
+  function collectParallax() {
+    parallaxItems = Array.from(document.querySelectorAll<HTMLElement>('[data-parallax]')).map((el) => ({
+      el,
+      rate: parseFloat(el.dataset.parallax || '0.15'),
+      fade: el.hasAttribute('data-parallax-fade'),
+    }));
+  }
+
+  function applyParallax() {
+    ticking = false;
+    const y = window.scrollY;
+    if (y > window.innerHeight * 1.4) return; // only matters near the top
+    for (const item of parallaxItems) {
+      const shift = y * item.rate;
+      item.el.style.transform = `translate3d(0, ${shift.toFixed(1)}px, 0)`;
+      if (item.fade) {
+        item.el.style.opacity = String(Math.max(0, 1 - y / (window.innerHeight * 0.85)));
+      }
+    }
+  }
+
+  function onScroll() {
+    if (ticking || reduceMotion) return;
+    ticking = true;
+    requestAnimationFrame(applyParallax);
+  }
+
+  function init() {
+    setupReveals();
+    collectParallax();
+    if (!reduceMotion) applyParallax();
+  }
+
+  init();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  // ClientRouter swaps the document, so re-bind against the new content.
+  document.addEventListener('astro:page-load', init);
+</script>

@@ -1,0 +1,253 @@
+/* ============================================================
+   Palette engine
+   Each palette supplies only a hue + chroma seed; every
+   surface/text lightness is derived once, per theme, below.
+   ============================================================ */
+
+:root,
+:root[data-palette='jade'] {
+  --accent-h: 165;
+  --accent-c: 0.13;
+  --neutral-h: 240;
+}
+
+:root[data-palette='ion'] {
+  --accent-h: 277;
+  --accent-c: 0.15;
+  --neutral-h: 278;
+}
+
+:root[data-palette='mercury'] {
+  --accent-h: 215;
+  --accent-c: 0.12;
+  --neutral-h: 225;
+}
+
+/* ---------- Dark (default) ---------- */
+:root {
+  --bg: oklch(0.145 0.014 var(--neutral-h));
+  --bg-elev: oklch(0.185 0.016 var(--neutral-h));
+  --text: oklch(0.96 0.006 var(--neutral-h));
+  --muted: oklch(0.66 0.014 var(--neutral-h));
+  --border: oklch(0.29 0.016 var(--neutral-h));
+  --accent: oklch(0.8 var(--accent-c) var(--accent-h));
+  --accent-deep: oklch(0.62 var(--accent-c) var(--accent-h));
+  --surface-line: oklch(0.6 0.028 var(--neutral-h));
+  color-scheme: dark;
+
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Public Sans', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+/* ---------- Light ---------- */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --bg: oklch(0.975 0.004 var(--neutral-h));
+    --bg-elev: oklch(0.94 0.006 var(--neutral-h));
+    --text: oklch(0.19 0.014 var(--neutral-h));
+    --muted: oklch(0.45 0.012 var(--neutral-h));
+    --border: oklch(0.86 0.008 var(--neutral-h));
+    --accent: oklch(0.52 var(--accent-c) var(--accent-h));
+    --accent-deep: oklch(0.42 var(--accent-c) var(--accent-h));
+    --surface-line: oklch(0.58 0.022 var(--neutral-h));
+    color-scheme: light;
+  }
+}
+
+:root[data-theme='light'] {
+  --bg: oklch(0.975 0.004 var(--neutral-h));
+  --bg-elev: oklch(0.94 0.006 var(--neutral-h));
+  --text: oklch(0.19 0.014 var(--neutral-h));
+  --muted: oklch(0.45 0.012 var(--neutral-h));
+  --border: oklch(0.86 0.008 var(--neutral-h));
+  --accent: oklch(0.52 var(--accent-c) var(--accent-h));
+  --accent-deep: oklch(0.42 var(--accent-c) var(--accent-h));
+  --surface-line: oklch(0.58 0.022 var(--neutral-h));
+  color-scheme: light;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+img { max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3, p { margin: 0; }
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 clamp(22px, 5vw, 72px);
+}
+
+/* ---------- Typography primitives ---------- */
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+/* ---------- Controls ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 26px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+.btn:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 0 26px;
+  text-decoration: none;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.link-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+.link-arrow::after {
+  content: '→';
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-arrow:hover { color: var(--accent); }
+.link-arrow:hover::after { transform: translateX(5px); }
+
+/* Focus is never removed — only restyled to match the system. */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ---------- Scroll reveal ----------
+   Deliberately slow and short-travel: the page should feel like it settles,
+   not like it performs. Anything that has not been observed yet stays put,
+   so content is never trapped invisible if the observer fails. */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--stagger, 0) * 90ms);
+}
+[data-reveal][data-revealed] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; }
+}
+
+/* Parallax layers are transform-only so they stay on the compositor. */
+[data-parallax] { will-change: transform; }
+
+/* A mono label that runs a dotted leader out to the edge of the column. */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: clamp(28px, 4vh, 44px);
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--border) 0 2px,
+    transparent 2px 7px
+  );
+}
+
+/* ---------- Rules ---------- */
+
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
+  border: 0;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

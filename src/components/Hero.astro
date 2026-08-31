@@ -1,0 +1,158 @@
+---
+import { path } from '../lib/path';
+import HeroObjects from './HeroObjects.astro';
+---
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy" data-parallax="0.12" data-parallax-fade>
+      <p class="eyebrow ticker">
+        <span>Gold</span><i></i><span>Digital Assets</span><i></i><span>Global Markets</span>
+      </p>
+
+      <h1 class="display">
+        Hold the line<br />
+        through every <em>cycle</em>.
+      </h1>
+
+      <p class="lede">
+        Iron Hold Capital runs a single risk-managed book across gold, digital
+        assets, and global trading strategies &mdash; three exposures that rarely
+        break together.
+      </p>
+
+      <div class="hero-actions">
+        <a href={path('/contact')} class="btn">Speak With Us</a>
+        <a href={path('/strategy')} class="btn-ghost">Our Approach</a>
+      </div>
+    </div>
+
+    {/* Drifts a little slower than the copy, so the two separate in depth
+        as the page scrolls away. */}
+    <div class="hero-visual" data-parallax="0.05" data-parallax-fade>
+      <HeroObjects />
+    </div>
+  </div>
+
+  <div class="scroll-cue" aria-hidden="true">
+    <span>Scroll</span>
+    <i></i>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: min(84vh, 800px);
+    padding: clamp(24px, 4vh, 56px) 0 clamp(72px, 11vh, 124px);
+  }
+
+  .hero-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
+  }
+
+  .hero-copy {
+    /* staged reveal, in step with the solids assembling alongside it */
+    animation: copyIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes copyIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  .ticker {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: clamp(20px, 2.6vh, 30px);
+  }
+  .ticker i {
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    opacity: 0.55;
+    flex-shrink: 0;
+  }
+
+  h1 {
+    font-size: clamp(42px, 5.6vw, 82px);
+    max-width: 14ch;
+    margin-bottom: clamp(20px, 2.8vh, 32px);
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .lede {
+    font-size: clamp(16px, 1.2vw, 18px);
+    line-height: 1.66;
+    color: var(--muted);
+    max-width: 44ch;
+    margin-bottom: clamp(28px, 4vh, 42px);
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .scroll-cue {
+    position: absolute;
+    left: clamp(22px, 5vw, 72px);
+    bottom: 26px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+  .scroll-cue i {
+    display: block;
+    width: 54px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    transform-origin: left center;
+    animation: cue 3.4s ease-in-out infinite;
+  }
+
+  @keyframes cue {
+    0%, 100% { transform: scaleX(0.35); opacity: 0.4; }
+    50% { transform: scaleX(1); opacity: 1; }
+  }
+
+  @media (max-width: 980px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 8px; }
+    .hero { min-height: 0; align-items: flex-start; padding: 12px 0 64px; }
+    .hero-visual { order: 2; }
+    .scroll-cue { display: none; }
+    /* Keeps the three labels on one line at 360px and up. */
+    .ticker {
+      font-size: 9px;
+      letter-spacing: 0.13em;
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+    .ticker i { width: 3px; height: 3px; }
+    h1 {
+      font-size: clamp(40px, 10.5vw, 60px);
+      max-width: 12ch;
+    }
+    .hero-actions .btn,
+    .hero-actions .btn-ghost { flex: 1 1 auto; }
+  }
+</style>

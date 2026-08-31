@@ -1,0 +1,97 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Private Consultation — Iron Hold Capital">
+  <section class="page-header container">
+    <p class="eyebrow">Private Consultation</p>
+    <h1>Let's talk.</h1>
+    <p class="subhead">
+      Iron Hold Capital works with a limited number of private investors. Tell us
+      a little about yourself and we'll be in touch.
+    </p>
+  </section>
+
+  <section class="form-section container">
+    <form class="contact-form">
+      <label>
+        <span>Name</span>
+        <input type="text" name="name" autocomplete="name" required />
+      </label>
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" autocomplete="email" required />
+      </label>
+      <label>
+        <span>Phone <em>(optional)</em></span>
+        <input type="tel" name="phone" autocomplete="tel" />
+      </label>
+      <label>
+        <span>How did you hear about us? <em>(optional)</em></span>
+        <input type="text" name="referral" />
+      </label>
+      <button type="submit" class="btn">Request a Consultation</button>
+      <p class="micro-disclaimer">
+        This form is an inquiry only and does not constitute an offer to sell or
+        a solicitation of an offer to buy any security.
+        <em>[Additional jurisdiction-specific language — pending legal review.]</em>
+      </p>
+    </form>
+  </section>
+</Layout>
+
+<style>
+  .page-header { padding: 64px 0 24px; }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4vw, 46px);
+    color: var(--text);
+    margin: 16px 0 16px;
+  }
+  .subhead {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--muted);
+    max-width: 480px;
+  }
+  .form-section { padding-bottom: 96px; }
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 480px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  label em { font-style: normal; opacity: 0.7; }
+  input {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 2px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus { border-bottom-color: var(--accent); }
+  .contact-form .btn {
+    margin-top: 8px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .micro-disclaimer {
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+</style>
