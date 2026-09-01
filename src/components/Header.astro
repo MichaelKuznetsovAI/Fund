@@ -26,7 +26,7 @@ const here = Astro.url.pathname;
           {link.label}
         </a>
       ))}
-      <a href={path('/contact')} class="btn-ghost nav-cta">Investor Login</a>
+      <a href={path('/investor-access')} class="btn-ghost nav-cta">Investor Login</a>
     </nav>
 
     <button
@@ -45,7 +45,7 @@ const here = Astro.url.pathname;
     {navLinks.map((link) => (
       <a href={path(link.href)} class="mobile-link">{link.label}</a>
     ))}
-    <a href={path('/contact')} class="btn mobile-cta">Investor Login</a>
+    <a href={path('/investor-access')} class="btn mobile-cta">Investor Login</a>
   </div>
 </header>
 

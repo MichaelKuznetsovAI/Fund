@@ -116,6 +116,22 @@ Live: https://michaelkuznetsovai.github.io/Fund/
 Custom domain later: drop `base` from `astro.config.mjs`, set `site` to the
 domain, add `public/CNAME`.
 
+## Investor access — read before touching it
+
+ gates the strategy room. This is a **static site**: there is
+no server, so nothing can check a password.
+
+**Do not put the detailed strategy in this repository behind a client-side
+check.** Anything behind a JavaScript gate still ships in the same public
+bundle and is readable with View Source — it would look protected while being
+fully public, which is worse than not publishing it at all.
+
+Both forms are deliberately unwired and say so on submit rather than faking a
+success; the sign-in form also clears the password field, because there is
+nowhere to send it. To make this real, either add a backend that serves the
+room only to an authenticated session, or keep the material out of the web app
+and deliver it as an access-controlled document after qualification.
+
 ## Before launch
 
 - [ ] Legal review of all copy, especially `/legal` and the contact disclaimer
@@ -125,3 +141,6 @@ domain, add `public/CNAME`.
 - [ ] Resolve every `[bracketed placeholder]`
 - [ ] Delete `DesignControls.astro` and its mount in `Layout.astro`
 - [ ] Wire the contact form to a real endpoint (currently inert)
+- [ ] Wire the investor access-request form to a mailbox or CRM
+- [ ] Decide how the strategy room is actually served — see the section above;
+      it must not ship as static content behind a script

@@ -1,48 +1,6 @@
 ---
-// PLACEHOLDER CONTENT — confirm before launch.
-//
-// The digital-asset list is drawn from the CoinGecko market-cap ranking
-// (snapshot: 1 Sep 2026), filtered down to assets a fund would actually take a
-// position in. Deliberately excluded, and easy to add back if wrong:
-//
-//   stablecoins (USDT, USDC, DAI, USDS, USDe, PYUSD, RLUSD, USDG, USDY …)
-//     — settlement instruments, not positions. Listing them as markets we
-//       trade would misrepresent the book.
-//   tokenised funds / RWA (BUIDL, USYC, Figure Heloc, Canton, Rain)
-//     — institutional products, not assets this strategy swing-trades.
-//   exchange tokens (LEO, WBT, OKB, CRO)
-//     — holding them adds venue counterparty risk to a book built to avoid it.
-//   memecoins (SHIB, MemeCore)
-//     — DOGE is kept as a genuinely liquid market; the smaller ones read badly
-//       next to copy about discipline. One line to restore if they are traded.
-//   XAUT (Tether Gold) — tokenised gold would blur the line with the gold
-//     sleeve, which is traded as a separate mandate entirely.
-//
-// NOTE: XMR and ZEC are included as major markets, but many custodians and
-// venues will not support privacy coins — worth confirming against the actual
-// custodian before this goes live.
-//
-// Tickers are set in the mono face rather than dropped in as third-party brand
-// logos. Those logos are full-colour and would fight the palette on every row,
-// and reproducing them drags in trademark questions this site does not need.
-
-const majors = [
-  { ticker: 'BTC', name: 'Bitcoin' },
-  { ticker: 'ETH', name: 'Ethereum' },
-  { ticker: 'SOL', name: 'Solana' },
-];
-
-const wider = [
-  'BNB', 'XRP', 'TRX', 'HYPE', 'DOGE', 'LINK', 'ADA', 'XLM', 'BCH', 'GRAM',
-  'LTC', 'UNI', 'HBAR', 'AVAX', 'SUI', 'NEAR', 'TAO', 'AAVE', 'XMR', 'ZEC',
-];
-
-const infrastructure = [
-  { label: 'Custody', value: 'Independent third party, off exchange' },
-  { label: 'Authorisation', value: 'Multi-signature — three independent keys' },
-  { label: 'Leverage', value: 'None on digital assets' },
-  { label: 'Provider', value: '[Custodian — to confirm]' },
-];
+// Traded universe lives in src/lib/markets.ts — shared with the Strategy page.
+import { majors, wider, gold, infrastructure } from '../lib/markets';
 ---
 
 <section class="coverage">
@@ -84,8 +42,8 @@ const infrastructure = [
       <p class="group-label">Gold <span>&mdash; actively traded, multi-manager</span></p>
       <div class="gold">
         <div class="gold-id">
-          <span class="ticker">XAU</span>
-          <span class="name">Gold</span>
+          <span class="ticker">{gold.ticker}</span>
+          <span class="name">{gold.name}</span>
         </div>
         <p class="gold-note">
           Traded as its own mandate by a specialist desk, with capital divided

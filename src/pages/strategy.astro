@@ -1,6 +1,7 @@
 ---
 import { path } from '../lib/path';
 import Layout from '../layouts/Layout.astro';
+import { majors, wider, gold, universeCount } from '../lib/markets';
 ---
 
 <Layout title="Strategy & Philosophy — Iron Hand Capital">
@@ -63,6 +64,65 @@ import Layout from '../layouts/Layout.astro';
 
     <a href={path('/approach')} class="link-arrow">See how each of these is run</a>
   </section>
+
+  <section class="assets container">
+    <p class="section-label" data-reveal>What We Trade</p>
+
+    <div class="assets-lead" data-reveal>
+      <h2>A universe of {universeCount}, and no more.</h2>
+      <p>
+        Depth in a handful of liquid markets beats breadth across assets we
+        could not exit at size. The list is short on purpose, and it is the
+        same list in every market condition.
+      </p>
+    </div>
+
+    <div class="asset-rows">
+      <div class="asset-row" data-reveal>
+        <div class="asset-head">
+          <span class="asset-kind">Digital assets</span>
+          <span class="asset-mode">Spot &middot; unleveraged &middot; months, not minutes</span>
+        </div>
+        <ul class="chips">
+          {majors.map((m) => <li class="chip chip-major">{m.ticker}</li>)}
+          {wider.map((t) => <li class="chip">{t}</li>)}
+        </ul>
+      </div>
+
+      <div class="asset-row" data-reveal style="--stagger: 1">
+        <div class="asset-head">
+          <span class="asset-kind">Gold</span>
+          <span class="asset-mode">Actively traded &middot; several independent desks</span>
+        </div>
+        <ul class="chips">
+          <li class="chip chip-major">{gold.ticker}</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="assets-note">
+      Position sizing, weightings and the reasoning behind each holding are set
+      out in the investor strategy room.
+    </p>
+  </section>
+
+  <!-- Gate to the investor strategy room. The detailed material is NOT shipped
+       in this static bundle — see /investor-access for why that matters. -->
+  <section class="gate container" data-reveal>
+    <div class="gate-inner">
+      <p class="gate-label">Investors</p>
+      <h2>The full strategy, in detail.</h2>
+      <p class="gate-copy">
+        Position sizing, allocation between the sleeves, how capital rotates
+        between offence and defence, and the reasoning behind each holding.
+        Released to verified investors rather than published.
+      </p>
+      <div class="gate-actions">
+        <a href={path('/investor-access')} class="btn">Enter the Strategy Room</a>
+        <a href={path('/investor-access')} class="btn-ghost">Request Access</a>
+      </div>
+    </div>
+  </section>
 </Layout>
 
 <style>
@@ -79,8 +139,119 @@ import Layout from '../layouts/Layout.astro';
   /* The container keeps its full width and centring so the copy lines up
      with the heading above it; the reading measure is applied to the
      children instead. Narrowing the container itself moved the whole column. */
-  .prose { padding-block-end: 96px; }
+  .prose { padding-block-end: clamp(36px, 5vh, 56px); }
   .prose > * { max-width: 680px; }
+
+  /* ---- what we trade ---- */
+  .assets { padding-block: clamp(34px, 5vh, 56px); }
+  .assets-lead { max-width: 640px; margin-bottom: clamp(26px, 3.4vh, 38px); }
+  .assets-lead h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(24px, 2.8vw, 34px);
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .assets-lead p {
+    font-size: clamp(15px, 1.2vw, 17px);
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .asset-rows { border-top: 1px solid var(--border); }
+  .asset-row {
+    padding: clamp(20px, 2.4vw, 26px) 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .asset-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .asset-kind {
+    font-family: var(--font-serif);
+    font-size: 19px;
+    color: var(--text);
+  }
+  .asset-mode {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+  }
+  .chip-major {
+    color: var(--accent);
+    border-color: color-mix(in oklab, var(--accent) 45%, transparent);
+  }
+
+  .assets-note {
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 60ch;
+  }
+
+  /* ---- investor gate ---- */
+  .gate { padding-block: clamp(20px, 3vh, 32px) clamp(56px, 8vh, 96px); }
+  .gate-inner {
+    padding: clamp(28px, 3.6vw, 46px);
+    border: 1px solid var(--accent);
+    background: color-mix(in oklab, var(--accent) 5%, transparent);
+    max-width: 820px;
+  }
+  .gate-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+  .gate-inner h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(24px, 3vw, 34px);
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .gate-copy {
+    font-size: clamp(15px, 1.2vw, 17px);
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 58ch;
+    margin-bottom: 26px;
+  }
+  .gate-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 560px) {
+    .gate-actions .btn,
+    .gate-actions .btn-ghost { flex: 1 1 auto; }
+  }
   .prose p {
     font-size: 17px;
     line-height: 1.75;

@@ -1,0 +1,279 @@
+---
+// INVESTOR ACCESS — read this before wiring anything up.
+//
+// This site is static (GitHub Pages). There is no server, so there is nothing
+// that can check a password. Two consequences that decide how this page works:
+//
+//  1. A client-side gate is not a gate. Anything "behind" a JavaScript
+//     password check still ships inside the same public bundle and is readable
+//     with View Source. The detailed strategy must therefore NOT be added to
+//     this repository until a real backend serves it to an authenticated
+//     session. Putting it behind a script would be worse than leaving it off
+//     the site — it would look protected while being fully public.
+//
+//  2. The sign-in form below is deliberately not faked. It does not pretend to
+//     authenticate and it does not silently swallow the submission; it states
+//     that the portal is not connected yet. Collecting a password into a form
+//     that goes nowhere would train investors to hand credentials to a page
+//     that cannot protect them.
+//
+// To make this real, one of:
+//   - a hosted auth provider + a server (or serverless) route that renders the
+//     strategy room only for a verified session, or
+//   - keep the strategy out of the web app entirely and deliver it as an
+//     access-controlled document after qualification.
+//
+// The request-access form is the path that genuinely works today, and it is
+// also how funds normally gate this material: qualification first, access
+// second. It needs an endpoint wired in (see the comment on the form).
+import Layout from '../layouts/Layout.astro';
+import { path } from '../lib/path';
+---
+
+<Layout
+  title="Investor Access — Iron Hand Capital"
+  description="Access to Iron Hand Capital's detailed strategy material, released to verified investors."
+>
+  <section class="page-header container">
+    <p class="eyebrow" data-reveal>Investor Access</p>
+    <h1 data-reveal style="--stagger: 1">The strategy room.</h1>
+    <p class="intro" data-reveal style="--stagger: 2">
+      Position sizing, allocation between the sleeves, how capital rotates
+      between offence and defence, and the reasoning behind each holding. This
+      material is released to verified investors rather than published.
+    </p>
+  </section>
+
+  <section class="panels container">
+    <!-- Existing investors -->
+    <div class="panel" data-reveal>
+      <p class="panel-label">Existing investors</p>
+      <h2>Sign in</h2>
+
+      <form class="form" data-signin novalidate>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button type="submit" class="btn">Sign In</button>
+
+        <!-- Honest state, not a fake success. Replaced by a real response once
+             an authentication backend exists. -->
+        <p class="form-status" data-signin-status role="status" hidden></p>
+      </form>
+    </div>
+
+    <!-- Request access -->
+    <div class="panel" data-reveal style="--stagger: 1">
+      <p class="panel-label">Not yet an investor</p>
+      <h2>Request access</h2>
+      <p class="panel-copy">
+        Access is granted after verification. Tell us who you are and we will
+        come back to you directly.
+      </p>
+
+      <!-- TODO: point `action` at a real handler (Formspree, a serverless
+           function, or the fund's CRM) before launch. Until then this submits
+           nowhere, and the script below says so rather than pretending. -->
+      <form class="form" data-request novalidate>
+        <label>
+          <span>Full name</span>
+          <input type="text" name="name" autocomplete="name" required />
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" required />
+        </label>
+        <label>
+          <span>Jurisdiction of residence</span>
+          <input type="text" name="jurisdiction" autocomplete="country-name" required />
+        </label>
+        <label>
+          <span>Investor type</span>
+          <select name="investorType" required>
+            <option value="">Select…</option>
+            <option>Private individual</option>
+            <option>Family office</option>
+            <option>Institution</option>
+            <option>Adviser / intermediary</option>
+          </select>
+        </label>
+        <button type="submit" class="btn-ghost">Request Access</button>
+        <p class="form-status" data-request-status role="status" hidden></p>
+      </form>
+    </div>
+  </section>
+
+  <section class="note container" data-reveal>
+    <p>
+      <strong>Verification.</strong> Access is granted only after we have
+      verified identity and investor status.
+      <em>[Verification standard and eligibility criteria — pending legal review.]</em>
+      Submitting a request is an enquiry only and does not constitute an offer
+      to sell or a solicitation of an offer to buy any security.
+    </p>
+    <a href={path('/legal')} class="link-arrow">Important information</a>
+  </section>
+</Layout>
+
+<style>
+  .page-header { padding-block: 64px 32px; }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4.2vw, 50px);
+    color: var(--text);
+    margin-top: 16px;
+  }
+  .intro {
+    font-size: clamp(16px, 1.3vw, 18px);
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 62ch;
+    margin-top: 22px;
+  }
+
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-block: 1px solid var(--border);
+  }
+  .panel {
+    padding: clamp(28px, 3.2vw, 42px) clamp(22px, 2.6vw, 36px);
+    border-left: 1px solid var(--border);
+  }
+  .panel:first-child { border-left: 0; }
+
+  .panel-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .panel h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(22px, 2.4vw, 28px);
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .panel-copy {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 46ch;
+    margin-bottom: 26px;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 400px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  input,
+  select {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 2px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  select { padding-left: 0; }
+  input:focus,
+  select:focus { border-bottom-color: var(--accent); }
+
+  .form .btn,
+  .form .btn-ghost {
+    margin-top: 6px;
+    cursor: pointer;
+    align-self: flex-start;
+  }
+
+  .form-status {
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--text);
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+  }
+
+  .note {
+    padding-block: clamp(28px, 4vh, 44px) clamp(56px, 8vh, 96px);
+    max-width: 760px;
+  }
+  .note p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .note strong { color: var(--text); }
+
+  @media (max-width: 860px) {
+    .panels { grid-template-columns: 1fr; }
+    .panel { border-left: 0; border-top: 1px solid var(--border); }
+    .panel:first-child { border-top: 0; }
+  }
+</style>
+
+<script>
+  // Neither form is wired to a backend yet. Rather than fail silently or fake
+  // a success, each says plainly what happened — a credential form that
+  // appears to work while going nowhere is worse than one that admits it.
+  function initAccessForms() {
+    const signin = document.querySelector<HTMLFormElement>('[data-signin]');
+    const signinStatus = document.querySelector<HTMLElement>('[data-signin-status]');
+
+    if (signin && signin.dataset.bound !== '1') {
+      signin.dataset.bound = '1';
+      signin.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!signinStatus) return;
+        signinStatus.hidden = false;
+        signinStatus.textContent =
+          'The investor portal is not connected yet. Accounts are issued directly — please request access, or contact us and we will send your credentials once verification is complete.';
+        // The password is never transmitted anywhere, because there is
+        // nowhere to transmit it to. Clear it rather than leave it sitting
+        // in the field.
+        signin.querySelector<HTMLInputElement>('input[name="password"]')!.value = '';
+      });
+    }
+
+    const request = document.querySelector<HTMLFormElement>('[data-request]');
+    const requestStatus = document.querySelector<HTMLElement>('[data-request-status]');
+
+    if (request && request.dataset.bound !== '1') {
+      request.dataset.bound = '1';
+      request.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!requestStatus) return;
+        requestStatus.hidden = false;
+        requestStatus.textContent =
+          'This form is not connected to a mailbox yet, so nothing was sent. Please email us directly in the meantime — [contact address to confirm].';
+      });
+    }
+  }
+
+  initAccessForms();
+  document.addEventListener('astro:page-load', initAccessForms);
+</script>
