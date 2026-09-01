@@ -118,7 +118,7 @@ domain, add `public/CNAME`.
 
 ## Investor access — read before touching it
 
- gates the strategy room. This is a **static site**: there is
+`/investor-access` gates the strategy room. This is a **static site**: there is
 no server, so nothing can check a password.
 
 **Do not put the detailed strategy in this repository behind a client-side
