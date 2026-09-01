@@ -1,0 +1,250 @@
+---
+// Shared body for each pillar's own page. The three pages differ only in their
+// data, so the layout lives here once.
+import { path } from '../lib/path';
+import { asOf, pillars, type Pillar } from '../lib/pillars';
+
+interface Props {
+  pillar: Pillar;
+}
+const { pillar } = Astro.props;
+const others = pillars.filter((p) => p.slug !== pillar.slug);
+---
+
+<section class="page-header container">
+  <p class="eyebrow" data-reveal>{pillar.index} &nbsp;/&nbsp; {pillar.name}</p>
+  <h1 data-reveal style="--stagger: 1">{pillar.title}</h1>
+  <p class="lede" data-reveal style="--stagger: 2">{pillar.lede}</p>
+</section>
+
+<section class="body container">
+  <div class="block-grid" data-reveal>
+    {pillar.blocks.map((b) => (
+      <div class="block">
+        <h3>{b.h}</h3>
+        <p>{b.p}</p>
+      </div>
+    ))}
+  </div>
+
+  <p class="avoid" data-reveal><span>What we avoid</span>{pillar.avoid}</p>
+</section>
+
+<!-- Market structure: how the market and its institutions actually behave, and
+     where fundamental research puts us inside it. Deliberately not tactics. -->
+<section class="structure container">
+  <p class="section-label" data-reveal>Market Structure</p>
+
+  <div class="structure-lead" data-reveal>
+    <h2>{pillar.structure.heading}</h2>
+    <p>{pillar.structure.intro}</p>
+  </div>
+
+  <div class="points">
+    {pillar.structure.points.map((pt, i) => (
+      <div class="point" data-reveal style={`--stagger: ${i + 1}`}>
+        <h3>{pt.h}</h3>
+        <p>{pt.p}</p>
+      </div>
+    ))}
+  </div>
+
+  <div class="ours" data-reveal>
+    <p class="ours-label">Where we sit in it</p>
+    <p class="ours-copy">{pillar.structure.ours}</p>
+  </div>
+
+  <p class="asof">{asOf}</p>
+</section>
+
+<nav class="next container" aria-label="Other pillars">
+  {others.map((o) => (
+    <a href={path(o.slug)} class="next-card">
+      <span class="next-index">{o.index}</span>
+      <span class="next-name">{o.name}</span>
+      <span class="next-go">Read</span>
+    </a>
+  ))}
+</nav>
+
+<style>
+  .page-header { padding-block: 64px 32px; }
+  h1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(32px, 4.2vw, 50px);
+    line-height: 1.14;
+    color: var(--text);
+    margin-top: 16px;
+    max-width: 17ch;
+  }
+  .page-header .lede {
+    font-size: clamp(16px, 1.3vw, 18px);
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 60ch;
+    margin-top: 22px;
+  }
+
+  .body { padding-block-end: clamp(40px, 6vh, 72px); }
+
+  .block-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px 44px;
+    max-width: 900px;
+    padding-top: clamp(28px, 4vh, 44px);
+    border-top: 1px solid var(--border);
+  }
+  .block h3 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .block p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .avoid {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 76ch;
+  }
+  .avoid span {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    margin-bottom: 6px;
+  }
+
+  .structure { padding-block: clamp(34px, 5vh, 56px) clamp(40px, 6vh, 72px); }
+  .structure-lead { max-width: 640px; margin-bottom: clamp(30px, 4vh, 44px); }
+  .structure-lead h2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(26px, 3vw, 36px);
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .structure-lead p {
+    font-size: clamp(15px, 1.2vw, 17px);
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .points {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .point {
+    padding: clamp(22px, 2.4vw, 30px);
+    background: var(--bg);
+  }
+  .point h3 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .point p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .ours {
+    margin-top: clamp(26px, 3.4vh, 40px);
+    padding: clamp(24px, 3vw, 34px);
+    border: 1px solid var(--accent);
+    background: color-mix(in oklab, var(--accent) 5%, transparent);
+    max-width: 860px;
+  }
+  .ours-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .ours-copy {
+    font-size: clamp(15px, 1.2vw, 17px);
+    line-height: 1.75;
+    color: var(--text);
+  }
+
+  /* A sentence, not a one-word tag — 10px is below the readability floor. */
+  .asof {
+    margin-top: 18px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+
+  /* Hairlines come from borders, not from a grey grid background: this
+     element is also the .container, so a background bleeds into its
+     horizontal padding and shows as slabs down each edge. */
+  .next {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-block: 1px solid var(--border);
+    margin-bottom: clamp(48px, 7vh, 88px);
+  }
+  .next-card {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: clamp(22px, 2.4vw, 30px);
+    border-left: 1px solid var(--border);
+    text-decoration: none;
+    transition: background-color 0.22s ease;
+  }
+  .next-card:first-child { border-left: 0; }
+  .next-card:hover { background: color-mix(in oklab, var(--accent) 7%, transparent); }
+  .next-index {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+  }
+  .next-name {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    color: var(--text);
+    flex: 1;
+  }
+  .next-go {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .next-card:hover .next-go { color: var(--accent); }
+
+  @media (max-width: 760px) {
+    .block-grid,
+    .points,
+    .next { grid-template-columns: 1fr; }
+    .block-grid { gap: 26px; }
+  }
+</style>

@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PillarPage from '../components/PillarPage.astro';
+import { pillarBySlug } from '../lib/pillars';
+
+const pillar = pillarBySlug('/custody')!;
+---
+
+<Layout title={`${pillar.name} — Iron Hand Capital`} description={pillar.card}>
+  <PillarPage pillar={pillar} />
+</Layout>

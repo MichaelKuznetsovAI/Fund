@@ -1,22 +1,8 @@
 ---
 import { path } from '../lib/path';
-const pillars = [
-  {
-    index: '01',
-    name: 'Digital Assets',
-    copy: 'Bought outright and held. No leverage, so no position can be closed out from under us — volatility becomes something to sit through rather than survive.',
-  },
-  {
-    index: '02',
-    name: 'Gold',
-    copy: 'Actively traded by a specialist desk, with capital allocated across several independent traders rather than concentrated with any one of them.',
-  },
-  {
-    index: '03',
-    name: 'Custody & Controls',
-    copy: 'Held with a third-party custodian under multi-signature control, away from trading venues. No single party can move the assets alone.',
-  },
-];
+// Single source of truth — see src/lib/pillars.ts. Each card now links to that
+// pillar's own page rather than all three landing on the same one.
+import { pillars } from '../lib/pillars';
 ---
 
 <section class="pillars">
@@ -24,10 +10,10 @@ const pillars = [
     <p class="section-label" data-reveal>The Book</p>
     <div class="pillars-grid">
       {pillars.map((pillar, i) => (
-        <a href={path('/approach')} class="pillar" data-reveal style={`--stagger: ${i + 1}`}>
+        <a href={path(pillar.slug)} class="pillar" data-reveal style={`--stagger: ${i + 1}`}>
           <span class="index">{pillar.index}</span>
           <h3>{pillar.name}</h3>
-          <p>{pillar.copy}</p>
+          <p>{pillar.card}</p>
           <span class="more">Learn more</span>
         </a>
       ))}
