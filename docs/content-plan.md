@@ -1,4 +1,4 @@
-# Iron Hold Capital — Site Content & Structure (v1 draft)
+# Iron Hand Capital — Site Content & Structure (v1 draft)
 
 > Working name only — no legal entity name, jurisdiction, or regulatory status
 > confirmed yet. Everything in `[brackets]` below is a placeholder pending legal
@@ -46,7 +46,7 @@ Hero: reuses whichever direction (A/B/C) is chosen from the design canvas.
 **Eyebrow:** OUR PHILOSOPHY
 **H1:** Protect first. Grow always.
 
-> Iron Hold Capital was built on a simple premise: most capital is lost not to bad
+> Iron Hand Capital was built on a simple premise: most capital is lost not to bad
 > markets, but to bad discipline. We combine three asset classes that rarely move
 > together — digital assets, gold, and actively traded global markets — into a
 > single, risk-managed approach.
@@ -91,7 +91,7 @@ controls and process, not a strategy reveal.
 ## Private Consultation — `/contact`
 
 **H1:** Let's talk.
-**Subhead:** Iron Hold Capital works with a limited number of private investors.
+**Subhead:** Iron Hand Capital works with a limited number of private investors.
 Tell us a little about yourself and we'll be in touch.
 
 **Form fields:** Name · Email · Phone (optional) · How did you hear about us? (optional)
@@ -115,7 +115,7 @@ consistent with the unresolved regulatory status.
   advice given via the site.
 
 **Footer line on every page:**
-> Iron Hold Capital — for informational purposes only. This site does not
+> Iron Hand Capital — for informational purposes only. This site does not
 > constitute an offer or solicitation. `[Jurisdiction/registration statement
 > pending legal review.]` See Important Information →
 
@@ -128,4 +128,4 @@ consistent with the unresolved regulatory status.
    private individuals (this is usually where securities-solicitation rules kick in).
 2. Pick a hero direction (A/B/C) from the design canvas to set tone for the rest of the site.
 3. Swap in the founder's real voice for the `/strategy` draft copy above.
-4. Domain + final entity name — currently "Iron Hold Capital" throughout as a working name.
+4. Domain + final entity name — currently "Iron Hand Capital" throughout as a working name.

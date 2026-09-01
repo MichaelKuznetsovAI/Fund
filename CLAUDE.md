@@ -1,11 +1,11 @@
-# Iron Hold Capital — website
+# Iron Hand Capital — website
 
 Marketing site for an investment fund running a single book across gold,
 digital assets, and global trading strategies. Static Astro site, English only,
 deployed to GitHub Pages.
 
 **Status: pre-launch.** The fund is not yet registered or licensed anywhere, and
-"Iron Hold Capital" is a working name. Nothing here has been through legal
+"Iron Hand Capital" is a working name. Nothing here has been through legal
 review.
 
 ## Commands
