@@ -1,26 +1,41 @@
 ---
 // PLACEHOLDER CONTENT — confirm before launch.
 //
-// Michael to replace with the fund's real traded universe. Two deliberate
-// choices worth keeping when you edit:
+// The digital-asset list is drawn from the CoinGecko market-cap ranking
+// (snapshot: 1 Sep 2026), filtered down to assets a fund would actually take a
+// position in. Deliberately excluded, and easy to add back if wrong:
 //
-//  1. This is framed as the markets we TRADE, not a holdings disclosure.
-//     Publishing live positions invites both a competitive and a regulatory
-//     problem; a coverage universe does not.
-//  2. Tickers are set in the mono face rather than dropped in as third-party
-//     brand logos. Those logos are full-colour (Solana's gradient, Polkadot's
-//     magenta) and would fight the palette on every row — and reproducing
-//     them also drags in trademark questions this site does not need.
-//     Set as type, the row reads like a terminal watchlist and stays on-brand.
+//   stablecoins (USDT, USDC, DAI, USDS, USDe, PYUSD, RLUSD, USDG, USDY …)
+//     — settlement instruments, not positions. Listing them as markets we
+//       trade would misrepresent the book.
+//   tokenised funds / RWA (BUIDL, USYC, Figure Heloc, Canton, Rain)
+//     — institutional products, not assets this strategy swing-trades.
+//   exchange tokens (LEO, WBT, OKB, CRO)
+//     — holding them adds venue counterparty risk to a book built to avoid it.
+//   memecoins (SHIB, MemeCore)
+//     — DOGE is kept as a genuinely liquid market; the smaller ones read badly
+//       next to copy about discipline. One line to restore if they are traded.
+//   XAUT (Tether Gold) — tokenised gold would blur the line with the gold
+//     sleeve, which is traded as a separate mandate entirely.
+//
+// NOTE: XMR and ZEC are included as major markets, but many custodians and
+// venues will not support privacy coins — worth confirming against the actual
+// custodian before this goes live.
+//
+// Tickers are set in the mono face rather than dropped in as third-party brand
+// logos. Those logos are full-colour and would fight the palette on every row,
+// and reproducing them drags in trademark questions this site does not need.
 
 const majors = [
   { ticker: 'BTC', name: 'Bitcoin' },
   { ticker: 'ETH', name: 'Ethereum' },
   { ticker: 'SOL', name: 'Solana' },
-  { ticker: 'XAU', name: 'Gold' },
 ];
 
-const wider = ['BNB', 'XRP', 'ADA', 'AVAX', 'LINK', 'DOT', 'ARB', 'OP'];
+const wider = [
+  'BNB', 'XRP', 'TRX', 'HYPE', 'DOGE', 'LINK', 'ADA', 'XLM', 'BCH', 'GRAM',
+  'LTC', 'UNI', 'HBAR', 'AVAX', 'SUI', 'NEAR', 'TAO', 'AAVE', 'XMR', 'ZEC',
+];
 
 const infrastructure = [
   { label: 'Custody', value: 'Independent third party, off exchange' },
@@ -42,20 +57,42 @@ const infrastructure = [
       </p>
     </div>
 
-    <div class="majors">
-      {majors.map((asset, i) => (
-        <div class="major" data-reveal style={`--stagger: ${i + 1}`}>
-          <span class="ticker">{asset.ticker}</span>
-          <span class="name">{asset.name}</span>
-        </div>
-      ))}
+    <!-- Digital assets -->
+    <div class="group" data-reveal>
+      <p class="group-label">Digital Assets <span>&mdash; spot, unleveraged</span></p>
+
+      <div class="majors">
+        {majors.map((asset, i) => (
+          <div class="major" data-reveal style={`--stagger: ${i + 1}`}>
+            <span class="ticker">{asset.ticker}</span>
+            <span class="name">{asset.name}</span>
+          </div>
+        ))}
+      </div>
+
+      <div class="wider" data-reveal>
+        <span class="wider-label">Also traded</span>
+        <ul>
+          {wider.map((ticker) => <li>{ticker}</li>)}
+        </ul>
+      </div>
     </div>
 
-    <div class="wider" data-reveal>
-      <span class="wider-label">Also traded</span>
-      <ul>
-        {wider.map((ticker) => <li>{ticker}</li>)}
-      </ul>
+    <!-- Gold, held apart: it is a separate mandate, run on opposite
+         principles, so it does not belong in the digital-asset row. -->
+    <div class="group gold-group" data-reveal>
+      <p class="group-label">Gold <span>&mdash; actively traded, multi-manager</span></p>
+      <div class="gold">
+        <div class="gold-id">
+          <span class="ticker">XAU</span>
+          <span class="name">Gold</span>
+        </div>
+        <p class="gold-note">
+          Traded as its own mandate by a specialist desk, with capital divided
+          across several independent traders. It is not held here as a passive
+          store of value.
+        </p>
+      </div>
     </div>
 
     <dl class="infra" data-reveal>
@@ -77,7 +114,7 @@ const infrastructure = [
 
   .lead {
     max-width: 620px;
-    margin-bottom: clamp(36px, 5vh, 56px);
+    margin-bottom: clamp(32px, 4vh, 48px);
   }
   .lead h2 {
     font-size: clamp(28px, 3.6vw, 44px);
@@ -90,9 +127,26 @@ const infrastructure = [
     max-width: 52ch;
   }
 
+  .group + .group { margin-top: clamp(34px, 4vh, 52px); }
+
+  /* 11px, not the 10px used for one-word section tags: these labels carry a
+     full descriptive phrase and have to stay comfortably readable. */
+  .group-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .group-label span {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
   .majors {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     border-block: 1px solid var(--border);
   }
   .major {
@@ -123,7 +177,7 @@ const infrastructure = [
     align-items: baseline;
     gap: 20px;
     flex-wrap: wrap;
-    padding: 26px 0;
+    padding: 22px 0;
     border-bottom: 1px solid var(--border);
   }
   .wider-label {
@@ -132,10 +186,11 @@ const infrastructure = [
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--muted);
+    flex-shrink: 0;
   }
   .wider ul {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
     list-style: none;
     margin: 0;
@@ -147,7 +202,7 @@ const infrastructure = [
     letter-spacing: 0.08em;
     color: var(--text);
     border: 1px solid var(--border);
-    padding: 6px 11px;
+    padding: 6px 10px;
     transition: border-color 0.2s ease, color 0.2s ease;
   }
   .wider li:hover {
@@ -155,12 +210,36 @@ const infrastructure = [
     color: var(--accent);
   }
 
+  /* Gold sits in its own frame rather than as a fourth crypto tile. */
+  .gold {
+    display: flex;
+    align-items: center;
+    gap: clamp(24px, 4vw, 56px);
+    flex-wrap: wrap;
+    padding: clamp(22px, 2.6vw, 30px) 0;
+    border-block: 1px solid var(--border);
+  }
+  .gold-id {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 120px;
+  }
+  .gold-note {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 58ch;
+    flex: 1;
+  }
+
   .infra {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
+    /* was 1px — the columns collided and the values ran together */
+    gap: 12px clamp(24px, 3vw, 44px);
     margin: 0;
-    padding-top: 32px;
+    padding-top: clamp(28px, 4vh, 40px);
   }
   .infra-row {
     display: flex;
@@ -177,19 +256,21 @@ const infrastructure = [
   .infra dd {
     margin: 0;
     font-size: 14px;
+    line-height: 1.5;
     color: var(--muted);
   }
 
   @media (max-width: 860px) {
-    .majors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .major:nth-child(3) { border-left: 0; }
-    .major:nth-child(-n + 2) { border-bottom: 1px solid var(--border); }
-    .infra { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px; }
+    .infra { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 24px; }
   }
-  @media (max-width: 520px) {
+  @media (max-width: 560px) {
     .majors { grid-template-columns: 1fr; }
-    .major { border-left: 0; border-bottom: 1px solid var(--border); }
+    .major {
+      border-left: 0;
+      border-bottom: 1px solid var(--border);
+    }
     .major:last-child { border-bottom: 0; }
     .infra { grid-template-columns: 1fr; }
+    .gold { gap: 18px; }
   }
 </style>
