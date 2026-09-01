@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { CONTACT_EMAIL } from '../lib/contact';
 ---
 
 <Layout title="Private Consultation — Iron Hand Capital">
@@ -9,6 +10,10 @@ import Layout from '../layouts/Layout.astro';
     <p class="subhead">
       Iron Hand Capital works with a limited number of private investors. Tell us
       a little about yourself and we'll be in touch.
+    </p>
+    <p class="direct-email" data-reveal style="--stagger: 2">
+      Prefer email? Write to us directly at
+      <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
     </p>
   </section>
 
@@ -54,6 +59,16 @@ import Layout from '../layouts/Layout.astro';
     line-height: 1.6;
     color: var(--muted);
     max-width: 480px;
+  }
+  .direct-email {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 18px;
+  }
+  .direct-email a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
   .form-section { padding-block-end: 96px; }
   .contact-form {

@@ -30,9 +30,13 @@ sleeve is and *why* it exists, never *how* it is executed. Detailed strategy
 belongs in a private document delivered after investor qualification, not on a
 public URL.
 
-**Every internal link goes through `src/lib/path.ts`.** The production build
-uses `base: '/Fund'` for GitHub Pages. A hardcoded `href="/strategy"` works in
-dev and 404s in production. Use `path('/strategy')`.
+**Every internal link goes through `src/lib/path.ts`.** The site is served
+from the root of a custom domain now (no `base` in `astro.config.mjs`), so
+`path('/strategy')` and a hardcoded `href="/strategy"` currently resolve to
+the same thing — but keep using the helper. This site has already changed
+base path once (project GitHub Pages site → custom domain); if it ever moves
+again, every link stays correct automatically instead of needing a find-and-
+replace across every page.
 
 ## Architecture
 
@@ -111,10 +115,19 @@ never fires, elements are force-shown — content must never get stuck invisible
 Push to `main` → `.github/workflows/deploy.yml` builds and publishes to Pages.
 Repo Settings → Pages → Source must be set to **GitHub Actions** (one-time).
 
-Live: https://michaelkuznetsovai.github.io/Fund/
+Live: https://iron-hand.com — a GitHub Pages *custom domain*, not the default
+`michaelkuznetsovai.github.io/Fund` project URL. Wired via:
+- `public/CNAME` (contains `iron-hand.com` — this is what tells GitHub Pages
+  to answer for the domain; picked up automatically from the deploy artifact,
+  no repo-settings step needed)
+- `site` in `astro.config.mjs`
+- Porkbun DNS: apex `ALIAS` and a `www` `CNAME`, both → `michaelkuznetsovai.github.io`
+  (set 2026-09-01 via the Porkbun API — see `.env` for the credentials that
+  did that, and don't reuse that pattern to touch the MX/SPF records, which
+  are the live mailbox)
 
-Custom domain later: drop `base` from `astro.config.mjs`, set `site` to the
-domain, add `public/CNAME`.
+DNS propagation can take a little while after any change like that; GitHub
+issues the HTTPS certificate automatically once it resolves.
 
 ## Investor access — read before touching it
 

@@ -216,6 +216,11 @@ import { path } from '../lib/path';
     border: 1px solid var(--border);
     background: color-mix(in oklab, var(--accent) 6%, transparent);
   }
+  .form-status a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
 
   .note {
     padding-block: clamp(28px, 4vh, 44px) clamp(56px, 8vh, 96px);
@@ -250,8 +255,10 @@ import { path } from '../lib/path';
         e.preventDefault();
         if (!signinStatus) return;
         signinStatus.hidden = false;
-        signinStatus.textContent =
-          'The investor portal is not connected yet. Accounts are issued directly — please request access, or contact us and we will send your credentials once verification is complete.';
+        // innerHTML is safe here — the string is a fixed literal, never
+        // user-supplied — and it's what makes the address a real mailto link.
+        signinStatus.innerHTML =
+          'The investor portal is not connected yet. Accounts are issued directly — please request access, or contact us at <a href="mailto:info@iron-hand.com">info@iron-hand.com</a> and we will send your credentials once verification is complete.';
         // The password is never transmitted anywhere, because there is
         // nowhere to transmit it to. Clear it rather than leave it sitting
         // in the field.
@@ -268,8 +275,8 @@ import { path } from '../lib/path';
         e.preventDefault();
         if (!requestStatus) return;
         requestStatus.hidden = false;
-        requestStatus.textContent =
-          'This form is not connected to a mailbox yet, so nothing was sent. Please email us directly in the meantime — [contact address to confirm].';
+        requestStatus.innerHTML =
+          'This form is not connected to a mailbox yet, so nothing was sent. Please email us directly in the meantime — <a href="mailto:info@iron-hand.com">info@iron-hand.com</a>.';
       });
     }
   }
