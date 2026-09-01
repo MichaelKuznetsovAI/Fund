@@ -120,8 +120,11 @@
     let intro = 0;
 
     // Scroll journey. 0 = hero, 1 = fully receded. The solids drift down and
-    // back into depth rather than fading out, so they stay with the reader for
-    // the whole page as a background presence.
+    // back into depth as you scroll through the hero and the pillar strip, so
+    // they accompany the reader rather than vanishing outright — but they
+    // still reach true zero by journey=1 (see journeyFade below), because a
+    // permanent low-opacity floor meant a faint ghost of them kept showing up
+    // inside later content sections (Coverage) with nothing to do with them.
     let journey = 0;
 
     function readScroll() {
@@ -278,7 +281,7 @@
       return { x: o.x, y: o.y + j * 2.1, z: o.z + zPush + j * 6.2 };
     }
     // Never reaches zero — receding to a quiet presence beats vanishing.
-    const journeyFade = () => 1 - 0.62 * smoothstep(journey);
+    const journeyFade = () => 1 - smoothstep(journey);
 
     // ---------- draw list ----------
 

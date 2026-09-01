@@ -49,10 +49,30 @@ import { majors, wider, gold, infrastructure } from '../lib/markets';
           <span class="name">{gold.name}</span>
         </div>
         <p class="gold-note">
-          Traded as its own mandate by a specialist desk, with capital divided
-          across several independent traders. It is not held here as a passive
-          store of value.
+          Traded as its own mandate by a specialist desk of experienced
+          trading professionals. It is not held here as a passive store of
+          value.
         </p>
+      </div>
+
+      <!-- Replaces the stray hero solid that used to drift into view here
+           (see HeroObjects' journeyFade — it now reaches true zero instead of
+           a permanent floor). Facts only, restated from the copy above —
+           nothing new asserted, no tagline. -->
+      <div class="gold-ticker" aria-hidden="true">
+        <div class="gold-ticker-track">
+          <span class="gold-badge"><i></i>Actively Traded</span>
+          <span class="gold-badge"><i></i>Specialist Desk</span>
+          <span class="gold-badge"><i></i>Experienced Professionals</span>
+          <span class="gold-badge"><i></i>Multi-Manager</span>
+          <span class="gold-badge"><i></i>Not a Passive Holding</span>
+          <!-- duplicated once, so translating the track by exactly -50% loops seamlessly -->
+          <span class="gold-badge"><i></i>Actively Traded</span>
+          <span class="gold-badge"><i></i>Specialist Desk</span>
+          <span class="gold-badge"><i></i>Experienced Professionals</span>
+          <span class="gold-badge"><i></i>Multi-Manager</span>
+          <span class="gold-badge"><i></i>Not a Passive Holding</span>
+        </div>
       </div>
     </div>
 
@@ -186,6 +206,46 @@ import { majors, wider, gold, infrastructure } from '../lib/markets';
     gap: 8px;
     min-width: 120px;
   }
+
+  /* Slow, seamless drift — a fact ticker, not an attention-grabber. The mask
+     fades each edge so badges don't hard-cut at the container boundary. */
+  .gold-ticker {
+    overflow: hidden;
+    padding: 16px 0 20px;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .gold-ticker-track {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    width: max-content;
+    animation: goldTickerDrift 32s linear infinite;
+  }
+  @keyframes goldTickerDrift {
+    to { transform: translateX(-50%); }
+  }
+  .gold-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .gold-badge i {
+    display: block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
   .gold-note {
     font-size: 15px;
     line-height: 1.7;

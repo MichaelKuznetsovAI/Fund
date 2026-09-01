@@ -45,7 +45,7 @@ export const pillars: Pillar[] = [
     lede: 'We buy the asset itself, never a leveraged claim on it — and we are prepared to hold it through the volatility that comes with the class.',
     blocks: [
       {
-        h: 'Spot only, no leverage',
+        h: 'Owned outright, no leverage',
         p: 'A leveraged position can be closed out by volatility alone: you can be right about an asset and still be forced out on the way there. Spot cannot be liquidated. Being able to sit through a drawdown rather than being removed from it is, in this asset class, the edge itself.',
       },
       {
@@ -92,7 +92,7 @@ export const pillars: Pillar[] = [
     slug: '/gold',
     index: '02',
     name: 'Gold',
-    card: 'Actively traded by a specialist desk, with capital allocated across several independent traders rather than concentrated with any one of them.',
+    card: 'Actively traded, not parked — run by a specialist desk of experienced trading professionals.',
     title: 'Traded actively, and never by one hand.',
     lede: 'Gold is traded actively here, not parked. The structural decision that matters most is that no single trader runs it.',
     blocks: [
