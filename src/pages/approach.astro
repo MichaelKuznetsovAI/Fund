@@ -1,49 +1,129 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
+// Written from the fund's actual stated approach. Two deliberate departures,
+// flagged to Michael and worth keeping unless counsel says otherwise:
+//
+//  1. The research paragraph describes a network and primary research that
+//     build conviction before a theme reaches consensus. It does NOT say the
+//     fund learns of project announcements in advance and buys ahead of the
+//     news — advertising that on a public page aimed at investors describes
+//     trading on material non-public information, which regulators have
+//     pursued in digital assets.
+//  2. Superlatives about the trading desk ("best in the world", "proven track
+//     record") are unverifiable performance claims. The desk's experience is
+//     stated plainly and the record itself is left as a placeholder rather
+//     than invented.
+
 const pillars = [
   {
+    index: '01',
     name: 'Digital Assets',
-    thesis: 'Crypto is an emerging, volatile, and asymmetric asset class. We treat it as one — not as a bet on any single token or narrative.',
-    lookFor: 'Position sizing appropriate to volatility, institutional-grade custody standards, and deep, liquid markets.',
-    avoid: 'Concentration in a single asset, illiquid tokens, and leverage used as a substitute for conviction.',
+    lede:
+      'We buy the asset itself, never a leveraged claim on it — and we are prepared to hold it through the volatility that comes with the class.',
+    blocks: [
+      {
+        h: 'Spot only, no leverage',
+        p: 'A leveraged position can be closed out by volatility alone: you can be right about an asset and still be forced out on the way there. Spot cannot be liquidated. Being able to sit through a drawdown rather than being removed from it is, in this asset class, the edge itself.',
+      },
+      {
+        h: 'Long swings, not day trades',
+        p: 'Positions are measured in months. Crypto punishes short horizons and forced exits, so the horizon is set to match the volatility rather than to fight it.',
+      },
+      {
+        h: 'Narrative and adoption research',
+        p: 'We form a view on where attention, developers and capital are rotating, and which themes are likely to draw flows before they become consensus. Relationships across the ecosystem inform that diligence — they sharpen the research, they do not replace it.',
+      },
+      {
+        h: 'No attachment to positions',
+        p: 'We do not marry projects. A project that misses its targets, breaks its commitments or fails to deliver on the thesis is cut or sold down. Conviction is a reason to enter a position; it is never a reason to stay in one.',
+      },
+    ],
+    avoid: 'Leverage. Lending the assets out for yield. Positions we could not exit at size.',
   },
   {
-    name: 'Gold & Precious Metals',
-    thesis: "Gold is the portfolio's ballast — held for what it has always been: a hedge against currency debasement and macro uncertainty.",
-    lookFor: '[Physical bullion vs. instrument exposure — depends on final fund structure.]',
-    avoid: 'Treating gold as a trading vehicle rather than a long-horizon anchor.',
+    index: '02',
+    name: 'Gold',
+    lede:
+      'Gold is traded actively here, not parked. The structural decision that matters most is that no single trader runs it.',
+    blocks: [
+      {
+        h: 'Actively traded',
+        p: 'The sleeve is run as a trading mandate rather than a passive holding, by a desk that specialises in the market.',
+      },
+      {
+        h: 'Allocated across several traders',
+        p: 'Capital is divided between multiple independent traders, each operating to their own mandate, rather than concentrated with one. No single trader’s judgment, style or drawdown determines the outcome of the sleeve.',
+      },
+      {
+        h: 'Why the split exists',
+        p: 'Manager risk is a distinct risk from market risk, and it is the one most often left unmanaged. Dividing the mandate diversifies judgment, timing and style — for the same reason a portfolio does not hold a single asset.',
+      },
+      {
+        h: 'The desk',
+        p: 'Experienced traders operating to defined mandates and risk limits. [Track record and tenure — to be confirmed and substantiated before publication.]',
+      },
+    ],
+    avoid: 'Concentrating the sleeve with a single manager. Mandates without defined limits.',
   },
   {
-    name: 'Global Trading',
-    thesis: 'A systematic and discretionary approach to global markets, active only where inefficiency is real enough to reward it.',
-    lookFor: 'Defined risk controls on every position, and a repeatable process over any single prediction.',
-    avoid: 'Strategy reveals, forecasting theatre, and returns built on undisclosed leverage.',
+    index: '03',
+    name: 'Custody & Controls',
+    lede:
+      'The dominant way investors have lost digital assets is not market risk. It is the failure of whoever was holding them.',
+    blocks: [
+      {
+        h: 'Held by a third party, off exchange',
+        p: 'Assets sit with an independent custodian in segregated storage, not on a trading venue. Balances are not left where they are traded.',
+      },
+      {
+        h: 'Multi-signature authorisation',
+        p: 'Moving assets requires multiple independent signing keys. No single party — including Iron Hand Capital — can move them alone, which removes any one person, device or company as a single point of failure.',
+      },
+      {
+        h: 'Separation of duties',
+        p: 'The party that trades is not the party that holds. Custody sits outside the trading function by design, so an error or a compromise on one side cannot reach the other.',
+      },
+      {
+        h: 'Provider',
+        p: '[Custodian name, jurisdiction and regulatory status — to confirm before publication.]',
+      },
+    ],
+    avoid: 'Leaving balances on exchanges. Single-key control. Custody by the same party that trades.',
   },
 ];
 ---
 
-<Layout title="The Three Pillars — Iron Hand Capital">
+<Layout title="Our Approach — Iron Hand Capital">
   <section class="page-header container">
-    <p class="eyebrow" data-reveal>The Three Pillars</p>
-    <h1 data-reveal style="--stagger: 1">Gold. Digital assets. Global trading.</h1>
+    <p class="eyebrow" data-reveal>Our Approach</p>
+    <h1 data-reveal style="--stagger: 1">Two markets, opposite disciplines.</h1>
+    <p class="intro" data-reveal style="--stagger: 2">
+      Gold is traded actively and spread across several hands. Digital assets
+      are bought outright and held without leverage. The two are run on
+      deliberately opposite principles, and both sit behind the same custody.
+    </p>
   </section>
 
   <section class="pillars-detail container">
     {pillars.map((pillar) => (
       <article class="pillar-block" data-reveal>
-        <h2>{pillar.name}</h2>
-        <p class="thesis">{pillar.thesis}</p>
-        <div class="pillar-grid">
-          <div>
-            <h3>What we look for</h3>
-            <p>{pillar.lookFor}</p>
-          </div>
-          <div>
-            <h3>What we avoid</h3>
-            <p>{pillar.avoid}</p>
-          </div>
+        <header class="block-head">
+          <span class="index">{pillar.index}</span>
+          <h2>{pillar.name}</h2>
+        </header>
+        <p class="lede">{pillar.lede}</p>
+
+        <div class="block-grid">
+          {pillar.blocks.map((b) => (
+            <div class="block">
+              <h3>{b.h}</h3>
+              <p>{b.p}</p>
+            </div>
+          ))}
         </div>
+
+        <p class="avoid"><span>What we avoid</span>{pillar.avoid}</p>
       </article>
     ))}
   </section>
@@ -57,51 +137,97 @@ const pillars = [
     font-size: clamp(32px, 4vw, 46px);
     color: var(--text);
     margin-top: 16px;
+    max-width: 18ch;
   }
+  .intro {
+    font-size: clamp(16px, 1.3vw, 18px);
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 62ch;
+    margin-top: 22px;
+  }
+
   .pillars-detail {
     display: flex;
     flex-direction: column;
-    gap: 56px;
+    gap: clamp(44px, 6vh, 72px);
     padding-block-end: 96px;
   }
+
   .pillar-block {
     border-top: 1px solid var(--border);
     padding-top: 32px;
   }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .index {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+  }
   h2 {
     font-family: var(--font-serif);
     font-weight: 400;
-    font-size: 28px;
+    font-size: clamp(26px, 3vw, 34px);
     color: var(--text);
-    margin-bottom: 14px;
   }
-  .thesis {
-    font-size: 17px;
+
+  .lede {
+    font-size: clamp(16px, 1.3vw, 18px);
     line-height: 1.7;
     color: var(--text);
-    max-width: 680px;
-    margin-bottom: 28px;
+    max-width: 60ch;
+    margin-bottom: 34px;
   }
-  .pillar-grid {
+
+  .block-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 32px;
-    max-width: 780px;
+    gap: 30px 44px;
+    max-width: 900px;
   }
-  h3 {
-    font-size: 13px;
-    letter-spacing: 0.06em;
+  .block h3 {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
-  .pillar-grid p {
+  .block p {
     font-size: 15px;
-    line-height: 1.65;
+    line-height: 1.7;
     color: var(--muted);
   }
 
-  @media (max-width: 700px) {
-    .pillar-grid { grid-template-columns: 1fr; gap: 24px; }
+  .avoid {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 76ch;
+  }
+  .avoid span {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.75;
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 760px) {
+    .block-grid { grid-template-columns: 1fr; gap: 26px; }
+    .block-head { gap: 12px; }
   }
 </style>
