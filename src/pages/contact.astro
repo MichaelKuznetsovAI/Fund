@@ -112,10 +112,15 @@ import { CONTACT_EMAIL } from '../lib/contact';
   }
   input:focus,
   textarea:focus { border-bottom-color: var(--accent); }
+  /* Was forcing a transparent background here without also overriding the
+     base .btn text colour (var(--bg), meant to read against a solid accent
+     fill) — at rest the button showed near-invisible page-background-
+     coloured text on a transparent background, only becoming legible on
+     :hover once the base rule's own hover color took over. Dropped the
+     override: this is the one primary action on the page, so it should
+     match the standard filled .btn used everywhere else (Hero, CtaBand). */
   .contact-form .btn {
     margin-top: 8px;
-    background: transparent;
-    cursor: pointer;
   }
   .micro-disclaimer {
     font-size: 12px;
