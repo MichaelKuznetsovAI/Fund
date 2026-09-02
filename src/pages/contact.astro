@@ -20,11 +20,11 @@ import { CONTACT_EMAIL } from '../lib/contact';
   <section class="form-section container">
     <form class="contact-form" data-reveal style="--stagger: 2">
       <label>
-        <span>Name</span>
+        <span>Name <em class="required" aria-hidden="true">*</em></span>
         <input type="text" name="name" autocomplete="name" required />
       </label>
       <label>
-        <span>Email</span>
+        <span>Email <em class="required" aria-hidden="true">*</em></span>
         <input type="email" name="email" autocomplete="email" required />
       </label>
       <label>
@@ -34,6 +34,10 @@ import { CONTACT_EMAIL } from '../lib/contact';
       <label>
         <span>How did you hear about us? <em>(optional)</em></span>
         <input type="text" name="referral" />
+      </label>
+      <label>
+        <span>Tell us a little about yourself <em class="required" aria-hidden="true">*</em></span>
+        <textarea name="about" rows="4" required></textarea>
       </label>
       <button type="submit" class="btn">Request a Consultation</button>
       <p class="micro-disclaimer">
@@ -86,7 +90,12 @@ import { CONTACT_EMAIL } from '../lib/contact';
     color: var(--muted);
   }
   label em { font-style: normal; opacity: 0.7; }
-  input {
+  label em.required {
+    color: var(--accent);
+    opacity: 1;
+  }
+  input,
+  textarea {
     font-family: var(--font-sans);
     font-size: 15px;
     color: var(--text);
@@ -97,7 +106,12 @@ import { CONTACT_EMAIL } from '../lib/contact';
     outline: none;
     transition: border-color 0.15s ease;
   }
-  input:focus { border-bottom-color: var(--accent); }
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+  input:focus,
+  textarea:focus { border-bottom-color: var(--accent); }
   .contact-form .btn {
     margin-top: 8px;
     background: transparent;

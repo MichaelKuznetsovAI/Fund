@@ -37,10 +37,3 @@ export const gold = { ticker: 'XAU', name: 'Gold' };
 
 /** majors + wider + gold */
 export const universeCount = majors.length + wider.length + 1;
-
-export const infrastructure = [
-  { label: 'Custody', value: 'Independent third party, off exchange' },
-  { label: 'Authorisation', value: 'Multi-signature — three independent keys' },
-  { label: 'Leverage', value: 'None on digital assets' },
-  { label: 'Provider', value: '[Custodian — to confirm]' },
-];
