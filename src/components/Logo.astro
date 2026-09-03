@@ -1,55 +1,37 @@
 ---
-// An open HAND, built entirely out of bars standing on a baseline — so the
-// name is legible in the silhouette while the construction stays in the
-// language of charts and data.
+// Faceted fist mark. Source art: "05 - Faceted Line Fist.png" (2048x2048,
+// solid #F3F7F8 backing, no alpha) — background keyed out to alpha and
+// cropped to the icon alone in design-logo/, since the source flattens the
+// mark and the "IRON HAND CAPITAL" wordmark into one image and this
+// component needs just the mark (the wordmark stays live text below, so it
+// keeps resizing and following theme color).
 //
-// A literal fist was the obvious route and the wrong one: it reads as force,
-// and a fund is selling composure. An open, measured hand says control without
-// aggression.
-//
-// Two earlier attempts are worth not repeating. Making the fingers step up
-// monotonically to double as a rising bar chart read purely as a chart — a
-// hand's silhouette arches (middle longest) and a staircase never will. And
-// running the thumb straight on from the end of the palm turned it into a
-// curved axis; springing it from the side is what makes it a digit.
-//
-// Six round-capped strokes on a 24-unit grid, so it survives favicon size
-// where fills and fine detail collapse.
+// Unlike the bar-hand mark this replaces, the ink (navy line + teal facets)
+// is baked into the raster, not currentColor — it will not repaint across
+// palettes or dark mode. The "unfilled" facets were keyed transparent along
+// with the true background, so on dark surfaces they show through as dark
+// rather than staying light — the two-tone facet contrast is a light-theme
+// effect. No per-finger hover interaction either: that relied on separate
+// stroke elements a raster doesn't have.
+import { Image } from 'astro:assets';
+import logoMark from '../assets/logo-mark.png';
+
 interface Props {
   size?: number;
   showWordmark?: boolean;
 }
-const { size = 22, showWordmark = true } = Astro.props;
+const { size = 26, showWordmark = true } = Astro.props;
 ---
 
 <span class="logo">
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
+  <Image
+    src={logoMark}
+    alt=""
+    width={logoMark.width}
+    height={logoMark.height}
     class="logo-mark"
-  >
-    <g stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-      <!-- Palm, which is also the chart's baseline axis. Without it the
-           strokes read as loose signal bars; it is what binds them into a
-           hand and grounds the bars at the same time. -->
-      <line class="palm" x1="6.4" y1="20.4" x2="20.6" y2="20.4" />
-      <!-- Thumb. It springs from the SIDE of the palm rather than continuing
-           its line — run on from the end and it reads as a curved axis, not a
-           digit. -->
-      <line class="thumb" x1="5.6" y1="18.4" x2="2.7" y2="14.6" />
-      <!-- Index, middle, ring, little — true finger lengths, so the silhouette
-           arches. A monotonic staircase was tried first and read purely as a
-           bar chart; the arch is what makes it a hand at 22px. -->
-      <line class="f1" x1="8.6" y1="19.6" x2="8.6" y2="10.4" />
-      <line class="f2" x1="12.6" y1="19.6" x2="12.6" y2="6.2" />
-      <line class="f3" x1="16.6" y1="19.6" x2="16.6" y2="7.6" />
-      <line class="f4" x1="20.6" y1="19.6" x2="20.6" y2="11.6" />
-    </g>
-  </svg>
+    style={`height: ${size}px; width: auto;`}
+  />
   {showWordmark && <span class="wordmark">IRON HAND CAPITAL</span>}
 </span>
 
@@ -64,23 +46,7 @@ const { size = 22, showWordmark = true } = Astro.props;
 
   .logo-mark {
     flex-shrink: 0;
-    overflow: visible;
-  }
-
-  /* On hover the hand closes a little — the mark performs its own verb.
-     Each stroke has its own origin so they contract toward the palm. */
-  .logo-mark line {
-    transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
-    transform-origin: bottom;
-    transform-box: fill-box;
-  }
-  :global(a:hover) .logo-mark .f4 { transform: scaleY(0.66); }
-  :global(a:hover) .logo-mark .f3 { transform: scaleY(0.74); }
-  :global(a:hover) .logo-mark .f2 { transform: scaleY(0.84); }
-  :global(a:hover) .logo-mark .f1 { transform: scaleY(0.92); }
-
-  @media (prefers-reduced-motion: reduce) {
-    .logo-mark line { transition: none; }
+    display: block;
   }
 
   .wordmark {
